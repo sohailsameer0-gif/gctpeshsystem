@@ -1,0 +1,2517 @@
+<div id="app-root"></div>
+<div id="toast-root"></div>
+<div id="modal-root"></div>
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body,button,input,select,textarea{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif}
+.app-shell{display:grid;grid-template-columns:260px 1fr;min-height:100vh;background:#f6f8fc}
+.app-sidebar{background:linear-gradient(165deg,#0a1f2e,#1d4f6f);color:#fff;display:flex;flex-direction:column;position:sticky;top:0;height:100vh;overflow-y:auto}
+.brand{padding:20px 18px;display:flex;gap:12px;align-items:center;border-bottom:1px solid rgba(255,255,255,0.1)}
+.brand-logo{width:44px;height:44px;border-radius:10px;background:linear-gradient(145deg,#d4a64b,#8a5a1a);display:grid;place-items:center;font-weight:800;color:#fff;font-size:14px}
+.brand-text strong{display:block;font-size:14px}
+.brand-text span{font-size:11px;opacity:0.7}
+.nav{padding:16px 10px;flex:1}
+.nav-group{margin-bottom:14px}
+.nav-group-title{font-size:10px;text-transform:uppercase;letter-spacing:1.4px;color:#ecd18c;opacity:0.75;padding:8px 14px 6px;font-weight:600}
+.nav-item{display:flex;align-items:center;gap:12px;padding:10px 14px;border-radius:8px;color:rgba(255,255,255,0.82);font-size:13px;cursor:pointer;margin-bottom:3px;text-decoration:none;transition:all 0.2s}
+.nav-item:hover{background:rgba(255,255,255,0.08);color:#fff;transform:translateX(4px)}
+.nav-item.active{background:linear-gradient(90deg,rgba(212,166,75,0.22),rgba(212,166,75,0.06));color:#fff;font-weight:600;box-shadow:inset 3px 0 0 #d4a64b}
+.nav-icon{width:20px;height:20px;display:inline-flex;align-items:center;justify-content:center}
+.nav-badge{margin-left:auto;background:#ef4444;color:#fff;font-size:10px;font-weight:700;padding:2px 7px;border-radius:10px}
+.app-main{display:flex;flex-direction:column;min-width:0}
+.app-topbar{background:rgba(255,255,255,0.85);backdrop-filter:blur(12px);border-bottom:1px solid #dde5ef;display:flex;align-items:center;gap:14px;padding:12px 22px;position:sticky;top:0;z-index:20}
+.topbar-title{font-weight:700;font-size:16px;flex:1;color:#0f2d42}
+.topbar-actions{display:flex;align-items:center;gap:10px}
+.icon-btn{width:40px;height:40px;border-radius:10px;display:grid;place-items:center;background:#eef2f8;color:#4a5a75;cursor:pointer;border:none;transition:all 0.2s;text-decoration:none;position:relative}
+.icon-btn:hover{background:#fff;color:#1d4f6f;transform:translateY(-2px);box-shadow:0 4px 12px rgba(0,0,0,0.08)}
+.icon-badge{position:absolute;top:-2px;right:-2px;background:#ef4444;color:#fff;font-size:10px;font-weight:700;padding:2px 6px;border-radius:10px;min-width:18px;text-align:center;border:2px solid #fff}
+.user-chip{display:flex;align-items:center;gap:10px;padding:5px 12px 5px 5px;border-radius:24px;background:#eef2f8;cursor:pointer;text-decoration:none;transition:all 0.2s}
+.user-chip:hover{background:#fff}
+.user-avatar{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#1d4f6f,#2a6a8f);color:#fff;display:grid;place-items:center;font-weight:600;font-size:13px}
+.user-meta strong{display:block;font-size:12px;color:#1f2a3d}
+.user-meta span{font-size:10px;color:#6b7a94}
+.app-content{padding:24px;flex:1}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;padding:9px 16px;border-radius:8px;font-size:13px;font-weight:600;border:none;cursor:pointer;text-decoration:none;transition:all 0.2s;min-height:38px}
+.btn-primary{background:linear-gradient(135deg,#1d4f6f,#2a6a8f);color:#fff}
+.btn-primary:hover{transform:translateY(-2px);box-shadow:0 6px 18px rgba(29,79,111,0.35)}
+.btn-accent{background:linear-gradient(135deg,#b47d2b,#d4a64b);color:#fff}
+.btn-accent:hover{transform:translateY(-2px);box-shadow:0 6px 18px rgba(180,125,43,0.35)}
+.btn-ghost{background:#fff;color:#344158;border:1px solid #dde5ef}
+.btn-ghost:hover{background:#f6f8fc}
+.btn-danger{background:#dc2626;color:#fff}
+.btn-success{background:#10a469;color:#fff}
+.btn-warn{background:#d97706;color:#fff}
+.btn-sm{padding:6px 12px;font-size:12px;min-height:32px}
+.btn-block{width:100%}
+.card{background:#fff;border:1px solid #dde5ef;border-radius:12px;box-shadow:0 2px 8px rgba(15,23,42,0.04);margin-bottom:16px;overflow:hidden}
+.card-header{padding:16px 20px;border-bottom:1px solid #dde5ef;display:flex;align-items:center;gap:12px;background:#fbfcfa;flex-wrap:wrap}
+.card-header h3{font-size:14px;font-weight:700;color:#153a56}
+.card-body{padding:20px}
+.stat-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:16px;margin-bottom:20px}
+.stat-card{background:#fff;border:1px solid #dde5ef;border-radius:12px;padding:18px 18px 16px 22px;position:relative;transition:all 0.25s}
+.stat-card::before{content:"";position:absolute;left:0;top:14px;bottom:14px;width:3px;background:#2a6a8f;border-radius:0 3px 3px 0}
+.stat-card:hover{transform:translateY(-3px);box-shadow:0 8px 24px rgba(15,23,42,0.1)}
+.stat-card .label{font-size:11px;text-transform:uppercase;letter-spacing:0.8px;color:#6b7a94;margin-bottom:8px;font-weight:600}
+.stat-card .value{font-size:26px;font-weight:700;color:#0f2d42;line-height:1.1}
+.stat-card .hint{font-size:11px;color:#6b7a94;margin-top:5px}
+.stat-card.success .value{color:#10a469}
+.stat-card.warn .value{color:#d97706}
+.stat-card.danger .value{color:#dc2626}
+.form-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:16px}
+.field{display:flex;flex-direction:column;gap:6px;margin-bottom:12px}
+.field label{font-size:12px;font-weight:600;color:#344158}
+.field .req{color:#dc2626}
+.field input,.field select,.field textarea{padding:10px 12px;border:1px solid #c5d0e0;border-radius:8px;background:#fff;color:#1f2a3d;width:100%;font-size:14px;min-height:42px}
+.field input:focus,.field select:focus,.field textarea:focus{outline:none;border-color:#2a6a8f;box-shadow:0 0 0 4px rgba(42,106,143,0.12)}
+.field.full{grid-column:1/-1}
+.table-wrap{overflow-x:auto;border:1px solid #dde5ef;border-radius:12px;background:#fff}
+table.data{width:100%;border-collapse:collapse;font-size:13px;min-width:600px}
+table.data th{text-align:left;padding:12px 14px;background:#eef2f8;font-weight:600;color:#4a5a75;font-size:11px;text-transform:uppercase;letter-spacing:0.6px;border-bottom:1px solid #dde5ef;white-space:nowrap}
+table.data td{padding:12px 14px;border-top:1px solid #eef2f8;color:#344158}
+table.data tbody tr:hover{background:#f6f8fc}
+table.data .empty{text-align:center;padding:40px;color:#6b7a94;font-style:italic}
+.badge{display:inline-flex;align-items:center;padding:3px 10px;border-radius:6px;font-size:11px;font-weight:600}
+.badge-success{background:#d1fae5;color:#065f46}
+.badge-warn{background:#fef3c7;color:#92400e}
+.badge-danger{background:#fee2e2;color:#991b1b}
+.badge-info{background:#dbeafe;color:#1e40af}
+.badge-gray{background:#dde5ef;color:#344158}
+.badge-gold{background:#fef9e7;color:#92400e;border:1px solid #c9a227}
+.modal-backdrop{position:fixed;inset:0;background:rgba(8,26,51,0.55);display:grid;place-items:center;z-index:100;padding:16px}
+.modal{background:#fff;border-radius:14px;width:100%;max-width:640px;max-height:92vh;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 24px 56px rgba(15,23,42,0.25)}
+.modal.modal-lg{max-width:900px}
+.modal-header{padding:18px 22px;border-bottom:1px solid #dde5ef;display:flex;align-items:center;gap:12px}
+.modal-header h3{font-size:16px;flex:1;font-weight:700;color:#0f2d42}
+.modal-body{padding:22px;overflow-y:auto}
+.modal-footer{padding:16px 22px;border-top:1px solid #dde5ef;display:flex;justify-content:flex-end;gap:10px;background:#f6f8fc}
+#toast-root{position:fixed;top:18px;right:18px;z-index:200;display:flex;flex-direction:column;gap:10px;pointer-events:none}
+.toast{background:#fff;border-left:4px solid #2563eb;border-radius:12px;padding:14px 18px;box-shadow:0 12px 28px rgba(15,23,42,0.15);min-width:280px;max-width:360px;pointer-events:auto;animation:slideIn 0.3s}
+@keyframes slideIn{from{transform:translateX(30px);opacity:0}to{transform:translateX(0);opacity:1}}
+.toast.success{border-left-color:#10a469}
+.toast.error{border-left-color:#dc2626}
+.toast.warn{border-left-color:#d97706}
+.toast strong{display:block;font-size:13px;margin-bottom:3px}
+.toast p{font-size:12px;color:#4a5a75}
+.live-badge{display:inline-flex;align-items:center;gap:5px;background:#10a469;color:#fff;padding:3px 10px;border-radius:20px;font-size:10px;font-weight:700;letter-spacing:0.5px}
+.live-badge::before{content:"";width:7px;height:7px;border-radius:50%;background:#fff;animation:blink 1s infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0.3}}
+.empty-state{padding:56px 24px;text-align:center;color:#6b7a94}
+.empty-state h4{font-size:16px;color:#344158;margin-bottom:8px}
+.row{display:flex;gap:10px;align-items:center}
+.row.wrap{flex-wrap:wrap}
+.row.between{justify-content:space-between}
+.muted{color:#6b7a94;font-size:12px}
+.mt-1{margin-top:8px}.mt-2{margin-top:16px}.mt-3{margin-top:24px}
+.mb-1{margin-bottom:8px}.mb-2{margin-bottom:16px}.mb-3{margin-bottom:24px}
+.text-right{text-align:right}
+.hidden{display:none!important}
+.login-page{min-height:100vh;display:grid;grid-template-columns:1.1fr 1fr;background:#f6f8fc}
+.login-left{background:linear-gradient(145deg,#0a1f2e,#1d4f6f);color:#fff;padding:52px;display:flex;flex-direction:column;justify-content:space-between}
+.login-left h1{font-size:32px;line-height:1.25;margin-bottom:14px;font-weight:800}
+.login-left .sub{opacity:0.85;font-size:14px;line-height:1.65;margin-bottom:28px}
+.login-feature-list{list-style:none;display:flex;flex-direction:column;gap:12px;font-size:14px;opacity:0.92}
+.login-feature-list li::before{content:"OK";display:inline-block;width:22px;height:22px;border-radius:50%;background:#d4a64b;color:#fff;font-size:8px;font-weight:800;text-align:center;line-height:22px;margin-right:12px}
+.login-right{display:grid;place-items:center;padding:40px;overflow-y:auto}
+.login-card{width:100%;max-width:440px;background:#fff;border-radius:24px;box-shadow:0 24px 64px rgba(15,23,42,0.14);padding:38px 36px}
+.login-card h2{font-size:26px;margin-bottom:6px;color:#0f2d42}
+.login-card .sub{font-size:13px;color:#6b7a94;margin-bottom:24px}
+.login-tabs{display:flex;gap:6px;margin-bottom:22px;background:#eef2f8;padding:5px;border-radius:10px}
+.login-tabs button{flex:1;padding:10px;border-radius:8px;font-size:13px;font-weight:600;color:#4a5a75;border:none;background:transparent;cursor:pointer}
+.login-tabs button.active{background:#fff;color:#153a56;box-shadow:0 2px 8px rgba(0,0,0,0.05)}
+.quick-login{margin-top:20px;padding:16px;background:#fef9e7;border:1px solid #e5d5ae;border-radius:10px}
+.quick-login label{font-size:12px;font-weight:700;color:#76531f;display:block;margin-bottom:8px}
+.quick-login select{width:100%;padding:10px 12px;border:1px solid #d9c18b;border-radius:8px;background:#fff;color:#5d451d;font-weight:600;cursor:pointer}
+.quick-login .hint{margin-top:8px;font-size:11px;color:#76531f;opacity:0.8}
+@media (max-width:900px){.app-shell{grid-template-columns:1fr}.app-sidebar{position:fixed;left:-290px;top:0;bottom:0;width:280px;z-index:60;transition:left 0.35s}.app-sidebar.open{left:0}.mobile-only{display:inline-flex!important}.login-page{grid-template-columns:1fr}.login-left{display:none}.app-content{padding:16px}}
+@media (min-width:901px){.mobile-only{display:none!important}}
+.sidebar-backdrop{position:fixed;inset:0;background:rgba(8,26,51,0.5);z-index:50;display:none}
+.sidebar-backdrop.open{display:block}
+</style>
+
+<script>
+(function(){
+'use strict';
+
+var DEBUG = true;
+function log(msg, data){
+  if(DEBUG && window.console) console.log('[GCT] ' + msg, data || '');
+}
+
+log('Script start');
+
+var $ = function(s, r){ return (r || document).querySelector(s); };
+var $$ = function(s, r){ return Array.prototype.slice.call((r || document).querySelectorAll(s)); };
+var uid = function(p){ return (p || 'id') + '_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 7); };
+var nowIso = function(){ return new Date().toISOString(); };
+var todayIso = function(){ return new Date().toISOString().slice(0, 10); };
+var esc = function(s){ return String(s == null ? '' : s).replace(/[&<>"']/g, function(c){ return ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' })[c]; }); };
+var fmtDate = function(d){ if(!d) return '-'; var t = new Date(d); if(isNaN(t)) return '-'; return t.toLocaleDateString('en-GB', { day:'2-digit', month:'short', year:'numeric' }); };
+var fmtDT = function(d){ if(!d) return '-'; var t = new Date(d); if(isNaN(t)) return '-'; return t.toLocaleString('en-GB', { day:'2-digit', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit' }); };
+var t2m = function(t){ if(!t) return 0; var p = String(t).split(':'); return Number(p[0]) * 60 + Number(p[1]); };
+var num = function(v){ return Number(v || 0); };
+var dayOfWeek = function(d){ return ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'][new Date(d).getDay()]; };
+
+log('Utils loaded');
+
+var STORAGE_KEY = 'gct_erp_v12';
+var ACTIVE_DEPT_KEY = 'gct_active_dept';
+var SESSION_KEY = 'gct_session_v12';
+
+var DEPARTMENTS = {
+  'btech-mechanical': {
+    id: 'btech-mechanical', code: 'BTECH-MECH',
+    name: 'B.Tech Mechanical Engineering Technology',
+    shortName: 'B.Tech Mechanical',
+    collegeName: 'GOVERNMENT COLLEGE OF TECHNOLOGY PESHAWAR',
+    affiliation: 'Affiliated with UET Peshawar',
+    durationYears: 4, totalSemesters: 8,
+    loginPrefix: 'mech',
+    sections: ['A','B','C'],
+    admissionPrefix: 'ADM-MECH',
+    settings: { shortageThreshold: 70, lateToAbsenceThreshold: 3, qrValiditySeconds: 45, qrAttendanceEnabled: true },
+    demoAccounts: [
+      { email: 'chairman.mech@gct.edu.pk', password: 'chairman123', role: 'chairman', displayName: 'Prof. Chairman (Mech)' },
+      { email: 'coordinator.mech@gct.edu.pk', password: 'coord123', role: 'coordinator', displayName: 'Coordinator (Mech)' },
+      { email: 'clerk.mech@gct.edu.pk', password: 'clerk123', role: 'clerk', displayName: 'Assistant Clerk (Mech)' },
+      { email: 'teacher.mech@gct.edu.pk', password: 'teacher123', role: 'teacher', displayName: 'Engr. Ahmed Khan', linkedRef: '__T1__' },
+      { email: 'teacher2.mech@gct.edu.pk', password: 'teacher123', role: 'teacher', displayName: 'Engr. Bilal Ahmad', linkedRef: '__T2__' },
+      { email: 'student.mech@gct.edu.pk', password: 'student123', role: 'student', displayName: 'Demo Student', linkedRef: '__S1__' },
+      { email: 'parent.mech@gct.edu.pk', password: 'parent123', role: 'parent', displayName: 'Demo Parent', linkedRef: '__P1__' }
+    ]
+  },
+  'btech-civil': {
+    id: 'btech-civil', code: 'BTECH-CIVIL',
+    name: 'B.Tech Civil Engineering Technology',
+    shortName: 'B.Tech Civil',
+    collegeName: 'GOVERNMENT COLLEGE OF TECHNOLOGY PESHAWAR',
+    affiliation: 'Affiliated with UET Peshawar',
+    durationYears: 4, totalSemesters: 8,
+    loginPrefix: 'civil',
+    sections: ['A','B','C'],
+    admissionPrefix: 'ADM-CIVIL',
+    settings: { shortageThreshold: 70, lateToAbsenceThreshold: 3, qrValiditySeconds: 45, qrAttendanceEnabled: true },
+    demoAccounts: [
+      { email: 'chairman.civil@gct.edu.pk', password: 'chairman123', role: 'chairman', displayName: 'Prof. Chairman (Civil)' },
+      { email: 'coordinator.civil@gct.edu.pk', password: 'coord123', role: 'coordinator', displayName: 'Coordinator (Civil)' },
+      { email: 'clerk.civil@gct.edu.pk', password: 'clerk123', role: 'clerk', displayName: 'Assistant Clerk (Civil)' },
+      { email: 'teacher.civil@gct.edu.pk', password: 'teacher123', role: 'teacher', displayName: 'Engr. Civil Teacher', linkedRef: '__T1__' },
+      { email: 'student.civil@gct.edu.pk', password: 'student123', role: 'student', displayName: 'Civil Student', linkedRef: '__S1__' }
+    ]
+  },
+  'dae': {
+    id: 'dae', code: 'DAE',
+    name: 'Diploma of Associate Engineering (DAE)',
+    shortName: 'DAE (3 Years)',
+    collegeName: 'GOVERNMENT COLLEGE OF TECHNOLOGY PESHAWAR',
+    affiliation: 'Affiliated with KP-TEVTA',
+    durationYears: 3, totalSemesters: 6,
+    loginPrefix: 'dae',
+    sections: ['A','B'],
+    admissionPrefix: 'ADM-DAE',
+    settings: { shortageThreshold: 65, lateToAbsenceThreshold: 3, qrValiditySeconds: 45, qrAttendanceEnabled: true },
+    demoAccounts: [
+      { email: 'chairman.dae@gct.edu.pk', password: 'chairman123', role: 'chairman', displayName: 'Prof. Chairman (DAE)' },
+      { email: 'coordinator.dae@gct.edu.pk', password: 'coord123', role: 'coordinator', displayName: 'Coordinator (DAE)' },
+      { email: 'clerk.dae@gct.edu.pk', password: 'clerk123', role: 'clerk', displayName: 'Assistant Clerk (DAE)' },
+      { email: 'teacher.dae@gct.edu.pk', password: 'teacher123', role: 'teacher', displayName: 'Engr. DAE Teacher', linkedRef: '__T1__' },
+      { email: 'student.dae@gct.edu.pk', password: 'student123', role: 'student', displayName: 'DAE Student', linkedRef: '__S1__' }
+    ]
+  }
+};
+
+var ROLE_LABELS = { chairman: 'Chairman', teacher: 'Teacher', coordinator: 'Coordinator', clerk: 'Assistant Clerk', student: 'Student', parent: 'Parent' };
+var ATT = { PRESENT: 'present', LATE: 'late', ABSENT: 'absent', LEAVE: 'approved_leave' };
+var LEAVE_STATUS = { WITH_TEACHER: 'with_teacher', WITH_CHAIRMAN: 'with_chairman', APPROVED: 'approved', REJECTED: 'rejected' };
+var DAYS = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+var LEAVE_TYPES = ['Medical','Emergency','Family','Personal','Other'];
+var STUDENT_STATUS = ['Active','Graduated','Left','Suspended','Withdrawn'];
+var SEMESTER_TERMS = ['Spring','Fall'];
+var ACADEMIC_YEARS = [2024,2025,2026,2027,2028,2029,2030];
+var COMMITTEE_POSITIONS = ['Chairman','Vice Chairman','Convener','Secretary','Treasurer','Member'];
+var COMMITTEE_KINDS = ['OBE','AT','PT','Standalone'];
+var SUBSTITUTE_STATUS = { PENDING: 'pending', ACCEPTED: 'accepted', DECLINED: 'declined' };
+
+log('Constants loaded');
+
+function getDepartments(){ return Object.keys(DEPARTMENTS).map(function(k){ return DEPARTMENTS[k]; }); }
+function getDepartment(id){ return DEPARTMENTS[id] || DEPARTMENTS['btech-mechanical']; }
+function getActiveDepartmentId(){ var id = null; try { id = localStorage.getItem(ACTIVE_DEPT_KEY); } catch(e){} return id || 'btech-mechanical'; }
+function setActiveDepartment(id){ try { localStorage.setItem(ACTIVE_DEPT_KEY, id); } catch(e){} }
+
+function makeInitialState(deptId){
+  return {
+    departmentId: deptId, session: null, settings: null,
+    students: [], parents: [], parentLinks: [],
+    teachers: [], semesters: [], sections: [],
+    courses: [], courseAssignments: [], topics: [], timetable: [],
+    attendanceSessions: [], attendanceRecords: [],
+    leaveApplications: [], teacherLeaveApplications: [],
+    lateScanRequests: [], substituteRequests: [],
+    committees: [], committeeMembers: [], committeeMeetings: [],
+    parentTeacherMeetings: [], notifications: [],
+    promotions: [], exitRecords: [], warnings: [], auditLogs: [],
+    accounts: [], assignments: [], assignmentSubmissions: [], sharedFiles: []
+  };
+}
+
+function loadStateFor(deptId){
+  try {
+    var key = STORAGE_KEY + '_' + deptId;
+    var raw = localStorage.getItem(key);
+    if(!raw) return makeInitialState(deptId);
+    var p = JSON.parse(raw);
+    return Object.assign(makeInitialState(deptId), p);
+  } catch(e){ return makeInitialState(deptId); }
+}
+
+function saveStateFor(deptId, stateObj){
+  try { localStorage.setItem(STORAGE_KEY + '_' + deptId, JSON.stringify(stateObj)); } catch(e){ log('Save error', e); }
+}
+
+var state = loadStateFor(getActiveDepartmentId());
+function saveState(){ saveStateFor(state.departmentId, state); }
+function setState(partial, ev){
+  Object.assign(state, partial);
+  saveState();
+  if(ev) emit(ev, state);
+  emit('state:change', state);
+}
+function updateColl(name, fn){
+  var patch = {};
+  patch[name] = fn(state[name] || []);
+  setState(patch, name + ':change');
+}
+
+var listeners = new Map();
+function on(ev, h){ if(!listeners.has(ev)) listeners.set(ev, new Set()); listeners.get(ev).add(h); return function(){ listeners.get(ev).delete(h); }; }
+function emit(ev, p){ var set = listeners.get(ev); if(set) set.forEach(function(h){ try { h(p); } catch(e){ log('Event error', e); } }); }
+
+log('State loaded for department: ' + state.departmentId);
+
+function audit(o){
+  var row = { id: uid('log'), departmentId: state.departmentId, userId: o.userId || 'system', role: o.role || 'system', action: o.action, module: o.module, recordId: o.recordId || null, timestamp: nowIso() };
+  updateColl('auditLogs', function(a){ return a.concat([row]); });
+}
+
+function makeDefaultSettings(dept){
+  return {
+    id: 'settings_' + dept.id,
+    departmentId: dept.id,
+    collegeName: dept.collegeName,
+    departmentName: dept.name,
+    affiliation: dept.affiliation,
+    address: 'Kohat Road, Peshawar, Khyber Pakhtunkhwa',
+    phone: '+92-91-9212739',
+    email: 'GCT_Peshawar@kptevta.gov.pk',
+    footerText: 'This is a computer-generated document. Verify with the department office.',
+    shortageThreshold: dept.settings.shortageThreshold,
+    lateToAbsenceThreshold: dept.settings.lateToAbsenceThreshold,
+    qrValiditySeconds: dept.settings.qrValiditySeconds,
+    qrAttendanceEnabled: dept.settings.qrAttendanceEnabled
+  };
+}
+
+function getSettings(){
+  if(!state.settings){
+    state.settings = makeDefaultSettings(getDepartment(state.departmentId));
+    saveState();
+  }
+  return Object.assign({}, makeDefaultSettings(getDepartment(state.departmentId)), state.settings);
+}
+function updateSettings(patch){
+  state.settings = Object.assign({}, getSettings(), patch);
+  saveState();
+  emit('settings:change', state.settings);
+}
+
+function pushNotification(o){
+  var row = {
+    id: uid('ntf'), departmentId: state.departmentId,
+    recipientId: o.recipientId || null, recipientRole: o.recipientRole || null,
+    title: o.title, message: o.message, type: o.type || 'info',
+    relatedRoute: o.relatedRoute || null, read: false, createdAt: nowIso()
+  };
+  updateColl('notifications', function(a){ return a.concat([row]); });
+  return row;
+}
+function notifsFor(userId, role, linkedId){
+  return (state.notifications || []).filter(function(n){
+    return n.recipientId === userId || (linkedId && n.recipientId === linkedId) || (n.recipientRole === role && !n.recipientId);
+  }).sort(function(a, b){ return new Date(b.createdAt) - new Date(a.createdAt); });
+}
+function unreadCount(userId, role, linkedId){ return notifsFor(userId, role, linkedId).filter(function(n){ return !n.read; }).length; }
+function markNotifRead(id){ updateColl('notifications', function(a){ return a.map(function(n){ return n.id === id ? Object.assign({}, n, { read: true }) : n; }); }); }
+function markAllRead(userId, role, linkedId){
+  var ids = new Set(notifsFor(userId, role, linkedId).map(function(n){ return n.id; }));
+  updateColl('notifications', function(a){ return a.map(function(n){ return ids.has(n.id) ? Object.assign({}, n, { read: true }) : n; }); });
+}
+function notifyRole(role, title, message, opts){ opts = opts || {}; pushNotification({ recipientRole: role, title: title, message: message, type: opts.type || 'info', relatedRoute: opts.relatedRoute || null }); }
+function notifyUser(userId, role, title, message, opts){ opts = opts || {}; pushNotification({ recipientId: userId, recipientRole: role, title: title, message: message, type: opts.type || 'info', relatedRoute: opts.relatedRoute || null }); }
+
+var PERMS = {
+  chairman: ['*'],
+  teacher: ['dashboard.view','my-classes.view','my-timetable.view','attendance.mark','attendance.view','attendance.manual','qr.start','leaves.review','leaves.forward','my-leave.submit','my-leave.view','students.view.assigned','notifications.view','topics.upload','profile.change','password.change','assignments.manage','assignments.view','substitute.request','substitute.accept'],
+  coordinator: ['dashboard.view','committees.manage','committees.view','meetings.manage','parent-meetings.manage','notifications.view','profile.change','password.change'],
+  clerk: ['dashboard.view','students.view','students.create','students.update','students.delete','promotions.manage','timetable.view','timetable.manage','attendance.view','attendance.manual','reports.view','import.manage','notifications.view','exit-records.manage','courses.create','profile.change','password.change','assignments.view'],
+  student: ['dashboard.view','profile.view.own','my-attendance.view','my-timetable.view','my-leave.submit','my-leave.view','my-academics.view','qr.scan','notifications.view','my-warnings.view','profile.change','password.change','assignments.submit','assignments.view'],
+  parent: ['dashboard.view','child.view','child.attendance.view','child.leave.view','child.timetable.view','child.academics.view','notifications.view','profile.change','password.change']
+};
+function can(role, perm){ if(!role) return false; var list = PERMS[role] || []; return list.indexOf('*') >= 0 || list.indexOf(perm) >= 0; }
+function requirePermission(session, perm){ if(!session) throw new Error('Not authenticated'); if(!can(session.role, perm)) throw new Error('Permission denied'); }
+function isFullAccess(session){ return !!session && session.role === 'chairman'; }
+
+function makeDemoAccountsFor(deptId){
+  var dept = getDepartment(deptId);
+  var s = loadStateFor(deptId);
+  var t1 = s.teachers[0], t2 = s.teachers[1];
+  var s1 = s.students[0];
+  var p1 = s.parents[0];
+  var custom = s.accounts || [];
+  return dept.demoAccounts.filter(function(a){
+    return !custom.some(function(x){ return x.email.toLowerCase() === a.email.toLowerCase(); });
+  }).map(function(a){
+    var linked = a.linkedRef;
+    if(linked === '__T1__') linked = t1 ? t1.id : null;
+    if(linked === '__T2__') linked = t2 ? t2.id : null;
+    if(linked === '__S1__') linked = s1 ? s1.id : null;
+    if(linked === '__P1__') linked = p1 ? p1.id : null;
+    return Object.assign({}, a, { departmentId: deptId, linkedId: linked, status: 'Approved' });
+  }).concat(custom);
+}
+function makeDemoAccounts(){ return makeDemoAccountsFor(state.departmentId); }
+
+function registerAccount(data){
+  var accs = makeDemoAccountsFor(state.departmentId);
+  if(accs.find(function(a){ return a.email.toLowerCase() === data.email.toLowerCase(); })) throw new Error('Email already registered');
+  var row = { id: uid('acc'), departmentId: state.departmentId, email: data.email.trim(), password: data.password, role: data.role, displayName: data.displayName || data.email, status: 'Pending', createdAt: nowIso() };
+  updateColl('accounts', function(a){ return a.concat([row]); });
+  notifyRole('chairman', 'New Registration', data.displayName + ' (' + data.role + ') wants to register.', { relatedRoute: '#/app/registrations-admin' });
+  return row;
+}
+function approveAccount(session, accountId){
+  if(session.role !== 'chairman') throw new Error('Only Chairman');
+  updateColl('accounts', function(a){ return a.map(function(x){ return x.id === accountId ? Object.assign({}, x, { status: 'Approved', approvedAt: nowIso() }) : x; }); });
+}
+function rejectAccount(session, accountId, reason){
+  if(session.role !== 'chairman') throw new Error('Only Chairman');
+  updateColl('accounts', function(a){ return a.map(function(x){ return x.id === accountId ? Object.assign({}, x, { status: 'Rejected', rejectionReason: reason || '' }) : x; }); });
+}
+
+function authLogin(email, password, deptId){
+  var dept = deptId || state.departmentId;
+  if(dept !== state.departmentId){
+    saveState();
+    setActiveDepartment(dept);
+    state = loadStateFor(dept);
+    bootstrapDepartment(dept);
+  }
+  var accs = makeDemoAccountsFor(dept);
+  var acc = null;
+  for(var i = 0; i < accs.length; i++){
+    if(accs[i].email.toLowerCase() === String(email).toLowerCase() && accs[i].password === password){ acc = accs[i]; break; }
+  }
+  if(!acc) throw new Error('Invalid email or password');
+  if(acc.status === 'Pending') throw new Error('Account pending approval');
+  if(acc.status === 'Rejected') throw new Error('Account rejected');
+  var userId = 'user_' + acc.role + '_' + acc.email.split('@')[0].replace(/[^a-z0-9]/g, '');
+  var session = { userId: userId, departmentId: dept, email: acc.email, role: acc.role, displayName: acc.displayName, linkedId: acc.linkedId || null, loggedInAt: nowIso() };
+  setState({ session: session }, 'session:change');
+  try { localStorage.setItem(SESSION_KEY, JSON.stringify(session)); } catch(e){}
+  audit({ userId: session.userId, role: session.role, action: 'login', module: 'auth' });
+  log('Login successful: ' + session.displayName);
+  return session;
+}
+
+function authLogout(){
+  var s = state.session;
+  if(s) audit({ userId: s.userId, role: s.role, action: 'logout', module: 'auth' });
+  setState({ session: null }, 'session:change');
+  try { localStorage.removeItem(SESSION_KEY); } catch(e){}
+}
+
+function restoreSession(){
+  try {
+    var raw = localStorage.getItem(SESSION_KEY);
+    if(!raw) return null;
+    var s = JSON.parse(raw);
+    if(!s || !s.email) return null;
+    if(s.departmentId && s.departmentId !== state.departmentId){
+      saveState();
+      setActiveDepartment(s.departmentId);
+      state = loadStateFor(s.departmentId);
+      bootstrapDepartment(s.departmentId);
+    }
+    state.session = s;
+    return s;
+  } catch(e){ return null; }
+}
+
+function changeOwnPassword(session, oldPwd, newPwd){
+  if(!newPwd || newPwd.length < 4) throw new Error('Min 4 characters');
+  var accs = makeDemoAccountsFor(state.departmentId);
+  var acc = null;
+  for(var i = 0; i < accs.length; i++) if(accs[i].email.toLowerCase() === session.email.toLowerCase()){ acc = accs[i]; break; }
+  if(!acc) throw new Error('Not found');
+  if(acc.password !== oldPwd) throw new Error('Current password incorrect');
+  var custom = state.accounts.find(function(a){ return a.email.toLowerCase() === session.email.toLowerCase(); });
+  if(custom){
+    updateColl('accounts', function(a){ return a.map(function(x){ return x.email.toLowerCase() === session.email.toLowerCase() ? Object.assign({}, x, { password: newPwd }) : x; }); });
+  } else {
+    var row = { id: uid('pwd'), departmentId: state.departmentId, email: session.email, role: session.role, displayName: session.displayName, password: newPwd, status: 'Approved', linkedId: session.linkedId, createdAt: nowIso() };
+    updateColl('accounts', function(a){ return a.concat([row]); });
+  }
+}
+
+log('Auth loaded');
+
+function bootstrapDepartment(deptId){
+  var dept = getDepartment(deptId);
+  var s = loadStateFor(deptId);
+  var needsSave = false;
+
+  if(!s.semesters || !s.semesters.length){
+    var ordinals = ['1st','2nd','3rd','4th','5th','6th','7th','8th'];
+    s.semesters = [];
+    for(var i = 0; i < dept.totalSemesters; i++){
+      s.semesters.push({ id: 'sem_' + deptId + '_' + (i + 1), number: i + 1, name: 'Semester ' + (i + 1) + ' (' + ordinals[i] + ')' });
+    }
+    needsSave = true;
+  }
+  if(!s.sections || !s.sections.length){
+    s.sections = [];
+    s.semesters.forEach(function(sem){
+      dept.sections.forEach(function(sn){
+        s.sections.push({ id: 'sec_' + deptId + '_' + sem.number + '_' + sn, name: sn, semesterId: sem.id });
+      });
+    });
+    needsSave = true;
+  }
+  if(!s.settings){ s.settings = makeDefaultSettings(dept); needsSave = true; }
+  if(!s.teachers || !s.teachers.length){
+    s.teachers = [
+      { id: 'tch_' + deptId + '_1', name: 'Engr. Ahmed Khan', email: 'teacher.' + dept.loginPrefix + '@gct.edu.pk', designation: 'Lecturer', subject: 'Applied Thermodynamics', mobile: '03001111111', active: true, createdAt: nowIso() },
+      { id: 'tch_' + deptId + '_2', name: 'Engr. Bilal Ahmad', email: 'teacher2.' + dept.loginPrefix + '@gct.edu.pk', designation: 'Lecturer', subject: 'Engineering Drawing', mobile: '03002222222', active: true, createdAt: nowIso() }
+    ];
+    needsSave = true;
+  }
+  if(!s.students || !s.students.length){
+    var sem1 = s.semesters[0];
+    var secA = s.sections.find(function(x){ return x.semesterId === sem1.id && x.name === 'A'; });
+    var secB = s.sections.find(function(x){ return x.semesterId === sem1.id && x.name === 'B'; });
+    s.students = [
+      { id: 'stu_' + deptId + '_1', admissionNumber: dept.admissionPrefix + '-2026-001', registrationNumber: 'GCT-2026-0001', classNumber: 'CLS-1A-01', name: 'Demo Student', fatherName: 'Demo Father', studentMobile: '03000000001', term: 'Spring', year: 2026, currentSemesterId: sem1.id, currentSectionId: secA ? secA.id : null, status: 'Active', admissionDate: todayIso() },
+      { id: 'stu_' + deptId + '_2', admissionNumber: dept.admissionPrefix + '-2026-002', registrationNumber: 'GCT-2026-0002', classNumber: 'CLS-1A-02', name: 'Ali Hassan', fatherName: 'Hassan Ali', studentMobile: '03000000002', term: 'Spring', year: 2026, currentSemesterId: sem1.id, currentSectionId: secA ? secA.id : null, status: 'Active', admissionDate: todayIso() },
+      { id: 'stu_' + deptId + '_3', admissionNumber: dept.admissionPrefix + '-2026-003', registrationNumber: 'GCT-2026-0003', classNumber: 'CLS-1B-01', name: 'Bilal Ahmed', fatherName: 'Ahmed Khan', studentMobile: '03000000003', term: 'Spring', year: 2026, currentSemesterId: sem1.id, currentSectionId: secB ? secB.id : (secA ? secA.id : null), status: 'Active', admissionDate: todayIso() }
+    ];
+    needsSave = true;
+  }
+  if(!s.parents || !s.parents.length){ s.parents = [{ id: 'par_' + deptId + '_1', name: 'Demo Parent', mobile: '03000000000', relation: 'Father' }]; needsSave = true; }
+  if(!s.parentLinks || !s.parentLinks.length){
+    if(s.parents[0] && s.students[0]){
+      s.parentLinks = [{ id: 'pl_' + deptId + '_1', parentId: s.parents[0].id, studentId: s.students[0].id, relation: 'Father', isPrimary: true, verified: true, linkedAt: nowIso() }];
+      needsSave = true;
+    }
+  }
+  if(!s.courses || !s.courses.length){
+    var sem0 = s.semesters[0];
+    s.courses = [
+      { id: 'crs_' + deptId + '_1', code: 'ME-101', name: 'Applied Thermodynamics', semesterId: sem0.id, creditHours: 3, type: 'theory', status: 'Active' },
+      { id: 'crs_' + deptId + '_2', code: 'ME-102', name: 'Engineering Drawing', semesterId: sem0.id, creditHours: 2, type: 'practical', status: 'Active' },
+      { id: 'crs_' + deptId + '_3', code: 'MA-101', name: 'Applied Mathematics', semesterId: sem0.id, creditHours: 3, type: 'theory', status: 'Active' }
+    ];
+    needsSave = true;
+  }
+  if(!s.courseAssignments || !s.courseAssignments.length){
+    var semA = s.semesters[0];
+    var secA2 = s.sections.find(function(x){ return x.semesterId === semA.id && x.name === 'A'; });
+    var secB2 = s.sections.find(function(x){ return x.semesterId === semA.id && x.name === 'B'; });
+    s.courseAssignments = [
+      { id: 'asg_' + deptId + '_1', courseId: s.courses[0].id, teacherId: s.teachers[0].id, semesterId: semA.id, sectionId: secA2 ? secA2.id : null, academicYear: 2026 },
+      { id: 'asg_' + deptId + '_2', courseId: s.courses[2].id, teacherId: s.teachers[0].id, semesterId: semA.id, sectionId: secA2 ? secA2.id : null, academicYear: 2026 },
+      { id: 'asg_' + deptId + '_3', courseId: s.courses[1].id, teacherId: s.teachers[1].id, semesterId: semA.id, sectionId: secB2 ? secB2.id : (secA2 ? secA2.id : null), academicYear: 2026 }
+    ];
+    needsSave = true;
+  }
+  if(!s.timetable || !s.timetable.length){
+    var semB = s.semesters[0];
+    var secA3 = s.sections.find(function(x){ return x.semesterId === semB.id && x.name === 'A'; });
+    var secB3 = s.sections.find(function(x){ return x.semesterId === semB.id && x.name === 'B'; });
+    s.timetable = [
+      { id: 'tt_' + deptId + '_1', day: 'Monday', startTime: '09:00', endTime: '10:00', courseId: s.courses[0].id, teacherId: s.teachers[0].id, semesterId: semB.id, sectionId: secA3 ? secA3.id : null, className: 'Class-R1', slotType: 'Theory', status: 'Active' },
+      { id: 'tt_' + deptId + '_2', day: 'Monday', startTime: '10:00', endTime: '11:00', courseId: s.courses[2].id, teacherId: s.teachers[0].id, semesterId: semB.id, sectionId: secA3 ? secA3.id : null, className: 'Class-R1', slotType: 'Theory', status: 'Active' },
+      { id: 'tt_' + deptId + '_3', day: 'Tuesday', startTime: '09:00', endTime: '10:30', courseId: s.courses[1].id, teacherId: s.teachers[1].id, semesterId: semB.id, sectionId: secB3 ? secB3.id : (secA3 ? secA3.id : null), className: 'Workshop-1', slotType: 'Practical', status: 'Active' },
+      { id: 'tt_' + deptId + '_4', day: 'Wednesday', startTime: '09:00', endTime: '10:00', courseId: s.courses[0].id, teacherId: s.teachers[0].id, semesterId: semB.id, sectionId: secA3 ? secA3.id : null, className: 'Class-R1', slotType: 'Theory', status: 'Active' }
+    ];
+    needsSave = true;
+  }
+  if(needsSave) saveStateFor(deptId, s);
+  log('Bootstrap complete for: ' + deptId);
+}
+
+function getLiveClasses(){
+  var today = dayOfWeek(new Date());
+  var nowMin = t2m(new Date().toTimeString().slice(0, 5));
+  return state.timetable.filter(function(t){
+    if(t.status !== 'Active') return false;
+    if(t.day !== today) return false;
+    var st = t2m(t.startTime), en = t2m(t.endTime);
+    return nowMin >= st && nowMin < en;
+  }).map(function(t){
+    var c = state.courses.find(function(x){ return x.id === t.courseId; });
+    var te = state.teachers.find(function(x){ return x.id === t.teacherId; });
+    var sem = state.semesters.find(function(x){ return x.id === t.semesterId; });
+    var sec = state.sections.find(function(x){ return x.id === t.sectionId; });
+    return { slot: t, course: c, teacher: te, semester: sem, section: sec, substitute: getActiveSubstituteForSlot(t.id) };
+  });
+}
+
+function getActiveSubstituteForSlot(slotId){
+  return state.substituteRequests.find(function(r){ return r.slotId === slotId && r.status === SUBSTITUTE_STATUS.ACCEPTED && r.date === todayIso(); });
+}
+
+function createSubstituteRequest(session, data){
+  if(session.role !== 'teacher' && session.role !== 'chairman') throw new Error('Only teachers');
+  var slot = null;
+  for(var i = 0; i < state.timetable.length; i++) if(state.timetable[i].id === data.slotId){ slot = state.timetable[i]; break; }
+  if(!slot) throw new Error('Slot not found');
+  if(!data.substituteTeacherId) throw new Error('Select substitute');
+  var sub = state.teachers.find(function(t){ return t.id === data.substituteTeacherId; });
+  if(!sub) throw new Error('Substitute not found');
+  var row = {
+    id: uid('sub'), slotId: slot.id, date: data.date || todayIso(),
+    originalTeacherId: slot.teacherId,
+    originalTeacherName: (state.teachers.find(function(t){ return t.id === slot.teacherId; }) || {}).name || '',
+    substituteTeacherId: data.substituteTeacherId,
+    substituteTeacherName: sub.name,
+    reason: data.reason || 'Late Arrival',
+    status: SUBSTITUTE_STATUS.PENDING,
+    requestedBy: session.userId, requestedAt: nowIso()
+  };
+  updateColl('substituteRequests', function(a){ return a.concat([row]); });
+  notifyUser(data.substituteTeacherId, 'teacher', 'Cover Request', session.displayName + ' requests you cover class. Reason: ' + row.reason, { type: 'warn', relatedRoute: '#/app/substitute-requests' });
+  notifyRole('chairman', 'Substitute Request', session.displayName + ' requested ' + sub.name + '. Reason: ' + row.reason, { relatedRoute: '#/app/substitute-requests' });
+  return row;
+}
+
+function acceptSubstituteRequest(session, requestId){
+  updateColl('substituteRequests', function(a){ return a.map(function(r){ return r.id === requestId ? Object.assign({}, r, { status: SUBSTITUTE_STATUS.ACCEPTED, acceptedAt: nowIso() }) : r; }); });
+}
+function declineSubstituteRequest(session, requestId, reason){
+  updateColl('substituteRequests', function(a){ return a.map(function(r){ return r.id === requestId ? Object.assign({}, r, { status: SUBSTITUTE_STATUS.DECLINED, declineReason: reason || '' }) : r; }); });
+}
+
+function getAvailableTeachersForSlot(slot){
+  return state.teachers.filter(function(t){
+    if(t.active === false) return false;
+    if(t.id === slot.teacherId) return false;
+    var conflict = state.timetable.some(function(x){
+      if(x.id === slot.id) return false;
+      if(x.day !== slot.day) return false;
+      if(x.teacherId !== t.id) return false;
+      var s1 = t2m(slot.startTime), e1 = t2m(slot.endTime);
+      var s2 = t2m(x.startTime), e2 = t2m(x.endTime);
+      return s1 < e2 && e1 > s2;
+    });
+    return !conflict;
+  });
+}
+
+log('Bootstrap functions loaded');
+
+function secureToken(){
+  var bytes = new Uint8Array(12);
+  try {
+    if(window.crypto && window.crypto.getRandomValues) window.crypto.getRandomValues(bytes);
+    else for(var i = 0; i < bytes.length; i++) bytes[i] = Math.floor(Math.random() * 256);
+  } catch(e){
+    for(var j = 0; j < bytes.length; j++) bytes[j] = Math.floor(Math.random() * 256);
+  }
+  var arr = [];
+  for(var k = 0; k < bytes.length; k++) arr.push(bytes[k].toString(16).padStart(2, '0'));
+  return 'qr_' + arr.join('');
+}
+
+var QR = (function(){
+  var ECC = { 1:[7,1,19,0,0], 2:[10,1,34,0,0], 3:[15,1,55,0,0], 4:[20,1,80,0,0], 5:[26,1,108,0,0], 6:[18,2,68,0,0], 7:[20,2,78,0,0], 8:[24,2,97,0,0], 9:[30,2,116,0,0], 10:[18,2,68,2,69] };
+  var ALIGN = { 1:[], 2:[6,18], 3:[6,22], 4:[6,26], 5:[6,30], 6:[6,34], 7:[6,22,38], 8:[6,24,42], 9:[6,26,46], 10:[6,28,50] };
+  var EXP = new Uint8Array(512), LOG = new Uint8Array(256);
+  (function(){
+    var x = 1;
+    for(var i = 0; i < 255; i++){ EXP[i] = x; LOG[x] = i; x <<= 1; if(x & 0x100) x ^= 0x11D; }
+    for(var j = 255; j < 512; j++) EXP[j] = EXP[j - 255];
+  })();
+  var gmul = function(a, b){ return (a === 0 || b === 0) ? 0 : EXP[LOG[a] + LOG[b]]; };
+  function rsGen(deg){
+    var p = [1];
+    for(var i = 0; i < deg; i++){
+      var n = new Array(p.length + 1); for(var k = 0; k < n.length; k++) n[k] = 0;
+      for(var j = 0; j < p.length; j++){ n[j] ^= gmul(p[j], 1); n[j+1] ^= gmul(p[j], EXP[i]); }
+      p = n;
+    }
+    return p;
+  }
+  function rsEnc(data, ecc){
+    var g = rsGen(ecc), r = [];
+    for(var i = 0; i < ecc; i++) r.push(0);
+    for(var d = 0; d < data.length; d++){
+      var f = data[d] ^ r[0];
+      r.shift(); r.push(0);
+      for(var k = 0; k < ecc; k++) r[k] ^= gmul(g[k+1], f);
+    }
+    return r;
+  }
+  function chooseVer(len){
+    for(var v = 1; v <= 10; v++){
+      var cap = ECC[v][1] * ECC[v][2] + ECC[v][3] * ECC[v][4];
+      var hb = 4 + (v >= 10 ? 16 : 8);
+      if(cap * 8 - hb >= len * 8) return v;
+    }
+    return 10;
+  }
+  function encode(text){
+    var bytes = [];
+    var str = new TextEncoder().encode(text);
+    for(var i = 0; i < str.length; i++) bytes.push(str[i]);
+    var version = chooseVer(bytes.length);
+    var size = 17 + version * 4;
+    var bits = [];
+    var push = function(val, len){ for(var i = len - 1; i >= 0; i--) bits.push((val >> i) & 1); };
+    push(0b0100, 4);
+    push(bytes.length, version >= 10 ? 16 : 8);
+    for(var b = 0; b < bytes.length; b++) push(bytes[b], 8);
+    var ecc = ECC[version][0], n1 = ECC[version][1], d1 = ECC[version][2], n2 = ECC[version][3], d2 = ECC[version][4];
+    var totalData = n1 * d1 + n2 * d2;
+    var totalBits = totalData * 8;
+    push(0, Math.min(4, totalBits - bits.length));
+    while(bits.length % 8 !== 0) bits.push(0);
+    var pad = [0xEC, 0x11], pi = 0;
+    while(bits.length < totalBits){ push(pad[pi++ % 2], 8); }
+    var dataCw = [];
+    for(var i2 = 0; i2 < bits.length; i2 += 8){
+      var v = 0;
+      for(var j = 0; j < 8; j++) v = (v << 1) | bits[i2 + j];
+      dataCw.push(v);
+    }
+    var blocks = [], idx = 0;
+    for(var k = 0; k < n1; k++){ blocks.push({ data: dataCw.slice(idx, idx + d1), ecc: [] }); idx += d1; }
+    for(var k2 = 0; k2 < n2; k2++){ blocks.push({ data: dataCw.slice(idx, idx + d2), ecc: [] }); idx += d2; }
+    for(var bi = 0; bi < blocks.length; bi++) blocks[bi].ecc = rsEnc(blocks[bi].data, ecc);
+    var maxD = 0;
+    for(var bi2 = 0; bi2 < blocks.length; bi2++) if(blocks[bi2].data.length > maxD) maxD = blocks[bi2].data.length;
+    var finalCw = [];
+    for(var ci = 0; ci < maxD; ci++) for(var bi3 = 0; bi3 < blocks.length; bi3++) if(ci < blocks[bi3].data.length) finalCw.push(blocks[bi3].data[ci]);
+    for(var ci2 = 0; ci2 < ecc; ci2++) for(var bi4 = 0; bi4 < blocks.length; bi4++) finalCw.push(blocks[bi4].ecc[ci2]);
+    var matrix = [], reserved = [];
+    for(var r = 0; r < size; r++){
+      var rowA = [], rowB = [];
+      for(var c = 0; c < size; c++){ rowA.push(false); rowB.push(false); }
+      matrix.push(rowA); reserved.push(rowB);
+    }
+    var setF = function(x, y, v){ if(x < 0 || y < 0 || x >= size || y >= size) return; matrix[y][x] = v; reserved[y][x] = true; };
+    var finder = function(cx, cy){
+      for(var dy = -4; dy <= 4; dy++) for(var dx = -4; dx <= 4; dx++){
+        var x = cx + dx, y = cy + dy;
+        if(x < 0 || y < 0 || x >= size || y >= size) continue;
+        var d = Math.max(Math.abs(dx), Math.abs(dy));
+        setF(x, y, d !== 2 && d !== 4);
+      }
+    };
+    finder(3, 3); finder(size - 4, 3); finder(3, size - 4);
+    for(var ti = 8; ti < size - 8; ti++){ setF(ti, 6, ti % 2 === 0); setF(6, ti, ti % 2 === 0); }
+    var ap = ALIGN[version];
+    for(var ai = 0; ai < ap.length; ai++) for(var aj = 0; aj < ap.length; aj++){
+      var ax = ap[ai], ay = ap[aj];
+      if((ax === 6 && ay === 6) || (ax === 6 && ay === size - 7) || (ax === size - 7 && ay === 6)) continue;
+      for(var dy2 = -2; dy2 <= 2; dy2++) for(var dx2 = -2; dx2 <= 2; dx2++){
+        var d2 = Math.max(Math.abs(dx2), Math.abs(dy2));
+        setF(ax + dx2, ay + dy2, d2 !== 1);
+      }
+    }
+    var formatData = (0b01 << 3) | 0;
+    var format = formatData << 10;
+    for(var fi = 14; fi >= 10; fi--) if((format >> fi) & 1) format ^= 0x537 << (fi - 10);
+    format = (formatData << 10 | format) ^ 0x5412;
+    var fmtBits = [];
+    for(var fi2 = 14; fi2 >= 0; fi2--) fmtBits.push((format >> fi2) & 1);
+    var fp = [[0,8],[1,8],[2,8],[3,8],[4,8],[5,8],[7,8],[8,8],[8,7],[8,5],[8,4],[8,3],[8,2],[8,1],[8,0]];
+    for(var pi2 = 0; pi2 < 15; pi2++){
+      var px = fp[pi2][0], py = fp[pi2][1];
+      setF(px, py, fmtBits[pi2] === 1);
+      setF(size - 1 - px, size - 1 - py, fmtBits[pi2] === 1);
+    }
+    setF(8, size - 8, true);
+    var bitIdx = 0, totalDB = finalCw.length * 8, up = true;
+    for(var col = size - 1; col > 0; col -= 2){
+      if(col === 6) col--;
+      for(var ri = 0; ri < size; ri++){
+        var y2 = up ? size - 1 - ri : ri;
+        for(var dx3 = 0; dx3 < 2; dx3++){
+          var x2 = col - dx3;
+          if(reserved[y2][x2]) continue;
+          var bit2 = false;
+          if(bitIdx < totalDB){
+            var b2 = finalCw[bitIdx >> 3];
+            bit2 = ((b2 >> (7 - (bitIdx & 7))) & 1) === 1;
+            bitIdx++;
+          }
+          if((x2 + y2) % 2 === 0) bit2 = !bit2;
+          matrix[y2][x2] = bit2;
+        }
+      }
+      up = !up;
+    }
+    return matrix;
+  }
+  function draw(canvas, text){
+    try {
+      var m = encode(text);
+      var size = m.length;
+      var scale = Math.max(2, Math.floor(canvas.width / size));
+      canvas.width = size * scale;
+      canvas.height = size * scale;
+      var ctx = canvas.getContext('2d');
+      ctx.fillStyle = '#fff';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.fillStyle = '#000';
+      for(var y = 0; y < size; y++) for(var x = 0; x < size; x++) if(m[y][x]) ctx.fillRect(x * scale, y * scale, scale, scale);
+      return true;
+    } catch(e){ log('QR error', e); return false; }
+  }
+  return { encode: encode, draw: draw };
+})();
+
+log('QR loaded');
+
+function toast(msg, type, title){
+  type = type || 'info';
+  var el = document.createElement('div');
+  el.className = 'toast ' + type;
+  el.innerHTML = '<strong>' + esc(title || (type === 'success' ? 'Success' : type === 'error' ? 'Error' : type === 'warn' ? 'Warning' : 'Info')) + '</strong><p>' + esc(msg) + '</p>';
+  document.getElementById('toast-root').appendChild(el);
+  setTimeout(function(){ el.style.opacity = '0'; el.style.transform = 'translateX(40px)'; }, 3200);
+  setTimeout(function(){ el.remove(); }, 3600);
+}
+
+function openModal(o){
+  var root = document.getElementById('modal-root');
+  var bd = document.createElement('div');
+  bd.className = 'modal-backdrop';
+  bd.innerHTML = '<div class="modal ' + (o.size === 'lg' ? 'modal-lg' : '') + '"><div class="modal-header"><h3>' + esc(o.title) + '</h3><button class="icon-btn" data-close>X</button></div><div class="modal-body">' + o.bodyHtml + '</div>' + (o.footerHtml ? '<div class="modal-footer">' + o.footerHtml + '</div>' : '') + '</div>';
+  root.appendChild(bd);
+  var close = function(){ bd.remove(); };
+  bd.querySelector('[data-close]').onclick = close;
+  bd.addEventListener('click', function(e){ if(e.target === bd) close(); });
+  if(o.onMount) o.onMount(bd, close);
+  return { el: bd, close: close };
+}
+
+function confirmDialog(o){
+  return new Promise(function(res){
+    var m = openModal({
+      title: o.title || 'Confirm',
+      bodyHtml: '<p>' + esc(o.message) + '</p>',
+      footerHtml: '<button class="btn btn-ghost" data-cancel>Cancel</button><button class="btn ' + (o.danger ? 'btn-danger' : 'btn-primary') + '" data-confirm>' + esc(o.confirmLabel || 'Confirm') + '</button>'
+    });
+    m.el.querySelector('[data-cancel]').onclick = function(){ m.close(); res(false); };
+    m.el.querySelector('[data-confirm]').onclick = function(){ m.close(); res(true); };
+  });
+}
+
+function textInputDialog(o){
+  return new Promise(function(resolve){
+    var required = o.required === true;
+    var m = openModal({
+      title: o.title || 'Add remarks',
+      bodyHtml: '<div class="field"><label>' + esc(o.label || 'Reason') + (required ? ' <span class="req">*</span>' : '') + '</label><textarea id="wfr" rows="4" maxlength="500"></textarea><div id="wfe" style="color:#dc2626;font-size:11px;min-height:14px"></div></div>',
+      footerHtml: '<button class="btn btn-ghost" data-cancel>Cancel</button><button class="btn ' + (o.danger ? 'btn-danger' : 'btn-primary') + '" data-submit>' + esc(o.submitLabel || 'Continue') + '</button>'
+    });
+    var input = m.el.querySelector('#wfr');
+    var settled = false;
+    var finish = function(value){ if(settled) return; settled = true; m.close(); resolve(value); };
+    m.el.querySelector('[data-close]').onclick = function(){ finish(null); };
+    m.el.querySelector('[data-cancel]').onclick = function(){ finish(null); };
+    m.el.querySelector('[data-submit]').onclick = function(){
+      var value = input.value.trim();
+      if(required && !value){ m.el.querySelector('#wfe').textContent = 'Required'; input.focus(); return; }
+      finish(value);
+    };
+    input.focus();
+  });
+}
+
+function exportCsv(filename, headers, rows){
+  var csv = [headers].concat(rows).map(function(r){ return r.map(function(c){ return '"' + String(c == null ? '' : c).replace(/"/g, '""') + '"'; }).join(','); }).join('\n');
+  var blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement('a');
+  a.href = url; a.download = filename; a.click();
+  setTimeout(function(){ URL.revokeObjectURL(url); }, 500);
+  toast('CSV downloaded', 'success');
+}
+
+function statCard(l, v, h, c){ return '<div class="stat-card ' + (c || '') + '"><div class="label">' + esc(l) + '</div><div class="value">' + v + '</div>' + (h ? '<div class="hint">' + esc(h) + '</div>' : '') + '</div>'; }
+
+function attendanceSummary(studentId, courseId){
+  var settings = getSettings();
+  var recs = state.attendanceRecords.filter(function(r){ return r.studentId === studentId && (!courseId || r.courseId === courseId); });
+  var present = recs.filter(function(r){ return r.status === ATT.PRESENT; }).length;
+  var late = recs.filter(function(r){ return r.status === ATT.LATE; }).length;
+  var absent = recs.filter(function(r){ return r.status === ATT.ABSENT; }).length;
+  var leave = recs.filter(function(r){ return r.status === ATT.LEAVE; }).length;
+  var total = present + late + absent + leave;
+  var conv = Math.floor(late / (settings.lateToAbsenceThreshold || 3));
+  var adj = (total + conv) === 0 ? 0 : ((present + leave) / (total + conv)) * 100;
+  return { total: total, present: present, late: late, absent: absent, leave: leave, converted: conv, adjustedPercentage: adj, isShortage: adj < (settings.shortageThreshold || 70) };
+}
+
+function isQrEnabled(){ return getSettings().qrAttendanceEnabled !== false; }
+function hasLateApprovalToday(studentId){ return state.lateScanRequests.some(function(r){ return r.studentId === studentId && r.date === todayIso() && r.status === 'approved'; }); }
+function requestLateScanApproval(session, o){
+  var row = { id: uid('lsr'), studentId: session.linkedId, studentName: (state.students.find(function(s){ return s.id === session.linkedId; }) || {}).name || '', date: todayIso(), reason: o.reason || '', requestedAt: nowIso(), status: 'pending' };
+  updateColl('lateScanRequests', function(a){ return a.concat([row]); });
+  notifyRole('chairman', 'Late Scan Request', row.studentName + ' requests permission.', { type: 'warn', relatedRoute: '#/app/late-scan-requests' });
+  return row;
+}
+function decideLateScan(session, requestId, decision, remarks){
+  updateColl('lateScanRequests', function(a){ return a.map(function(r){ return r.id === requestId ? Object.assign({}, r, { status: decision, decidedAt: nowIso(), decidedBy: session.userId, remarks: remarks || '' }) : r; }); });
+}
+
+function startQrSession(session, o){
+  if(session.role !== 'teacher' && session.role !== 'chairman') throw new Error('Only teachers');
+  if(!isQrEnabled()) throw new Error('QR disabled by Chairman');
+  var slot = null;
+  for(var i = 0; i < state.timetable.length; i++) if(state.timetable[i].id === o.timetableId){ slot = state.timetable[i]; break; }
+  if(!slot) throw new Error('Slot not found');
+  var ttl = (getSettings().qrValiditySeconds || 45) * 1000;
+  var row = {
+    id: uid('att'), timetableId: slot.id,
+    teacherId: session.linkedId || slot.teacherId,
+    courseId: slot.courseId, semesterId: slot.semesterId, sectionId: slot.sectionId,
+    className: slot.className || '', date: todayIso(),
+    scheduledStart: slot.startTime, scheduledEnd: slot.endTime,
+    actualStart: nowIso(), qrToken: secureToken(), qrExpiresAt: new Date(Date.now() + ttl).toISOString(),
+    status: 'open', locked: false, createdBy: session.userId
+  };
+  updateColl('attendanceSessions', function(a){ return a.concat([row]); });
+  notifyRole('chairman', 'QR Session Started', session.displayName + ' started QR for ' + (slot.className || ''), { relatedRoute: '#/app/qr-control' });
+  return row;
+}
+function closeSession(session, id){ updateColl('attendanceSessions', function(a){ return a.map(function(s){ return s.id === id ? Object.assign({}, s, { status: 'closed' }) : s; }); }); }
+function rotateQr(session, sessionId){
+  var ttl = (getSettings().qrValiditySeconds || 45) * 1000;
+  updateColl('attendanceSessions', function(a){ return a.map(function(x){ return x.id === sessionId ? Object.assign({}, x, { qrToken: secureToken(), qrExpiresAt: new Date(Date.now() + ttl).toISOString() }) : x; }); });
+}
+function scanQr(session, o){
+  if(!o.token) throw new Error('Invalid token');
+  var att = null;
+  for(var i = 0; i < state.attendanceSessions.length; i++) if(state.attendanceSessions[i].qrToken === o.token){ att = state.attendanceSessions[i]; break; }
+  if(!att) throw new Error('QR not recognized');
+  if(att.status !== 'open') throw new Error('Session closed');
+  if(new Date(att.qrExpiresAt) < new Date()) throw new Error('QR expired');
+  if(state.attendanceRecords.find(function(r){ return r.sessionId === att.id && r.studentId === o.studentId; })) throw new Error('Already marked');
+  var now = new Date();
+  var arrival = now.toTimeString().slice(0, 5);
+  var diff = Math.max(0, t2m(arrival) - t2m(att.scheduledStart));
+  var status = diff > 0 ? ATT.LATE : ATT.PRESENT;
+  if(status === ATT.LATE && !hasLateApprovalToday(o.studentId)) throw new Error('Late - need approval');
+  var rec = { id: uid('rec'), sessionId: att.id, studentId: o.studentId, courseId: att.courseId, teacherId: att.teacherId, semesterId: att.semesterId, sectionId: att.sectionId, date: att.date, scheduledTime: att.scheduledStart, arrivalTime: arrival, status: status, lateMinutes: diff, markedBy: session.userId, markedAt: nowIso(), manual: false };
+  updateColl('attendanceRecords', function(a){ return a.concat([rec]); });
+  return rec;
+}
+function manualAttendance(session, o){
+  if(!can(session.role, 'attendance.manual')) throw new Error('Denied');
+  var stu = state.students.find(function(s){ return s.id === o.studentId; });
+  if(!stu) throw new Error('Student not found');
+  var dup = state.attendanceRecords.find(function(r){ return r.studentId === o.studentId && r.date === o.date && r.courseId === o.courseId; });
+  if(dup) throw new Error('Already recorded');
+  var row = { id: uid('rec'), sessionId: 'manual_' + o.studentId + '_' + o.date, studentId: o.studentId, courseId: o.courseId, teacherId: o.teacherId || session.linkedId || session.userId, semesterId: stu.currentSemesterId, sectionId: stu.currentSectionId, date: o.date, scheduledTime: o.scheduledTime || '', arrivalTime: o.arrivalTime || null, status: o.status, lateMinutes: num(o.lateMinutes), markedBy: session.userId, markedAt: nowIso(), manual: true, manualReason: o.manualReason || 'Manual' };
+  updateColl('attendanceRecords', function(a){ return a.concat([row]); });
+  return row;
+}
+
+log('Attendance functions loaded');
+
+function validateStudent(d, opts){
+  opts = opts || {}; var currentId = opts.currentId || null;
+  var e = {};
+  var req = function(k, m){ if(!String(d[k] || '').trim()) e[k] = m || 'Required'; };
+  req('name', 'Name required'); req('fatherName', 'Father required');
+  req('admissionNumber', 'Adm# required'); req('registrationNumber', 'Reg# required');
+  req('classNumber', 'Class# required'); req('studentMobile', 'Mobile required');
+  if(d.studentMobile && !/^03\d{9}$/.test(d.studentMobile)) e.studentMobile = '11 digits starting 03';
+  if(!d.currentSemesterId) e.currentSemesterId = 'Sem required';
+  if(!d.currentSectionId) e.currentSectionId = 'Sec required';
+  if(state.students.find(function(s){ return s.admissionNumber === d.admissionNumber && s.id !== currentId; })) e.admissionNumber = 'Adm# exists';
+  if(state.students.find(function(s){ return s.registrationNumber === d.registrationNumber && s.id !== currentId; })) e.registrationNumber = 'Reg# exists';
+  if(state.students.find(function(s){ return s.classNumber === d.classNumber && s.id !== currentId; })) e.classNumber = 'Class# exists';
+  return e;
+}
+function createStudent(session, data){
+  requirePermission(session, 'students.create');
+  var errs = validateStudent(data);
+  if(Object.keys(errs).length) throw { validation: errs };
+  var row = Object.assign({ id: uid('stu'), createdAt: nowIso() }, data);
+  updateColl('students', function(a){ return a.concat([row]); });
+  return row;
+}
+function updateStudent(session, id, data){
+  requirePermission(session, 'students.update');
+  var errs = validateStudent(data, { currentId: id });
+  if(Object.keys(errs).length) throw { validation: errs };
+  updateColl('students', function(a){ return a.map(function(s){ return s.id === id ? Object.assign({}, s, data) : s; }); });
+}
+function deleteStudent(session, id){
+  requirePermission(session, 'students.delete');
+  updateColl('students', function(a){ return a.filter(function(s){ return s.id !== id; }); });
+}
+function searchStudents(f){
+  f = f || {}; var q = (f.text || '').toLowerCase().trim();
+  return state.students.filter(function(s){
+    if(q){
+      var h = [s.name, s.fatherName, s.registrationNumber, s.admissionNumber, s.classNumber, s.studentMobile].map(function(x){ return String(x || '').toLowerCase(); }).join(' ');
+      if(h.indexOf(q) < 0) return false;
+    }
+    if(f.semesterId && s.currentSemesterId !== f.semesterId) return false;
+    if(f.sectionId && s.currentSectionId !== f.sectionId) return false;
+    if(f.status && s.status !== f.status) return false;
+    return true;
+  });
+}
+function searchStudentsScoped(session, f){
+  var base = searchStudents(f);
+  if(session.role !== 'teacher') return base;
+  if(!session.linkedId) return [];
+  var assigns = state.courseAssignments.filter(function(a){ return a.teacherId === session.linkedId; });
+  var pairs = {};
+  assigns.forEach(function(a){ pairs[a.semesterId + '|' + a.sectionId] = true; });
+  return base.filter(function(s){ return pairs[s.currentSemesterId + '|' + s.currentSectionId]; });
+}
+
+log('Student functions loaded');
+
+function createCourse(session, data){
+  if(!can(session.role, 'courses.create')) throw new Error('Denied');
+  var code = String(data.code || '').trim();
+  var e = {};
+  if(!code) e.code = 'Required';
+  if(!data.name) e.name = 'Required';
+  if(!data.semesterId) e.semesterId = 'Required';
+  if(state.courses.find(function(c){ return String(c.code || '').trim().toLowerCase() === code.toLowerCase(); })) e.code = 'Exists';
+  if(Object.keys(e).length) throw { validation: e };
+  var row = Object.assign({ id: uid('crs'), createdAt: nowIso() }, data, { code: code });
+  updateColl('courses', function(a){ return a.concat([row]); });
+}
+function updateCourse(session, id, patch){
+  if(!can(session.role, 'courses.create')) throw new Error('Denied');
+  updateColl('courses', function(a){ return a.map(function(c){ return c.id === id ? Object.assign({}, c, patch) : c; }); });
+}
+function deleteCourse(session, id){
+  if(!can(session.role, 'courses.create')) throw new Error('Denied');
+  updateColl('courses', function(a){ return a.filter(function(c){ return c.id !== id; }); });
+}
+
+function createSlot(session, data){
+  requirePermission(session, 'timetable.manage');
+  var row = Object.assign({ id: uid('tt'), createdAt: nowIso() }, data, { status: 'Active' });
+  updateColl('timetable', function(a){ return a.concat([row]); });
+}
+function updateSlot(session, id, patch){
+  requirePermission(session, 'timetable.manage');
+  updateColl('timetable', function(a){ return a.map(function(t){ return t.id === id ? Object.assign({}, t, patch) : t; }); });
+}
+function deleteSlot(session, id){
+  requirePermission(session, 'timetable.manage');
+  updateColl('timetable', function(a){ return a.filter(function(t){ return t.id !== id; }); });
+}
+
+function createTopic(session, data){
+  if(['chairman', 'teacher'].indexOf(session.role) < 0) throw new Error('Denied');
+  var row = { id: uid('tpc'), courseId: data.courseId, title: data.title, description: data.description || '', type: data.type || 'Theory', classDate: data.classDate || '', createdBy: session.userId, createdByName: session.displayName, createdAt: nowIso() };
+  updateColl('topics', function(a){ return a.concat([row]); });
+}
+
+function submitStudentLeave(session, data){
+  if(session.role !== 'student') throw new Error('Only students');
+  data.reason = String(data.reason || '').trim();
+  if(!data.reason) throw new Error('Reason required');
+  var days = Math.ceil((new Date(data.endDate) - new Date(data.startDate)) / 86400000) + 1;
+  var row = { id: uid('lv'), studentId: session.linkedId, leaveType: data.leaveType, startDate: data.startDate, endDate: data.endDate, days: days, reason: data.reason, description: data.description || '', status: LEAVE_STATUS.WITH_TEACHER, submittedAt: nowIso() };
+  updateColl('leaveApplications', function(a){ return a.concat([row]); });
+  notifyRole('chairman', 'New Student Leave', 'A student submitted a leave.', { relatedRoute: '#/app/leaves' });
+  return row;
+}
+function teacherForward(session, leaveId, remarks){
+  requirePermission(session, 'leaves.forward');
+  updateColl('leaveApplications', function(a){ return a.map(function(l){ return l.id === leaveId ? Object.assign({}, l, { status: LEAVE_STATUS.WITH_CHAIRMAN, teacherRemarks: remarks || '', forwardedAt: nowIso() }) : l; }); });
+  notifyRole('chairman', 'Leave Forwarded', 'Needs your decision.', { relatedRoute: '#/app/leaves' });
+}
+function chairmanDecide(session, leaveId, decision, remarks){
+  requirePermission(session, 'leaves.decide');
+  remarks = String(remarks || '').trim();
+  if(!remarks) throw new Error('Remarks required');
+  var status = decision === 'approve' ? LEAVE_STATUS.APPROVED : LEAVE_STATUS.REJECTED;
+  updateColl('leaveApplications', function(a){ return a.map(function(l){ return l.id === leaveId ? Object.assign({}, l, { status: status, chairmanRemarks: remarks, decidedAt: nowIso() }) : l; }); });
+}
+
+function submitTeacherLeave(session, data){
+  if(session.role !== 'teacher') throw new Error('Only teachers');
+  var row = { id: uid('tlv'), teacherId: session.linkedId, teacherName: session.displayName, leaveType: data.leaveType, startDate: data.startDate, endDate: data.endDate, reason: data.reason, status: LEAVE_STATUS.WITH_CHAIRMAN, submittedAt: nowIso() };
+  updateColl('teacherLeaveApplications', function(a){ return a.concat([row]); });
+  notifyRole('chairman', 'Teacher Leave Request', session.displayName + ' submitted leave.', { relatedRoute: '#/app/teacher-leaves' });
+}
+function decideTeacherLeave(session, id, decision, remarks){
+  if(session.role !== 'chairman') throw new Error('Only Chairman');
+  updateColl('teacherLeaveApplications', function(a){ return a.map(function(l){ return l.id === id ? Object.assign({}, l, { status: decision === 'approve' ? LEAVE_STATUS.APPROVED : LEAVE_STATUS.REJECTED, chairmanRemarks: remarks || '', decidedAt: nowIso() }) : l; }); });
+}
+
+function issueWarning(session, data){
+  if(session.role !== 'chairman') throw new Error('Only Chairman');
+  var row = { id: uid('wrn'), studentId: data.studentId, reason: data.reason, severity: data.severity || 'Warning', message: data.message, issuedBy: session.userId, issuedAt: nowIso() };
+  updateColl('warnings', function(a){ return a.concat([row]); });
+}
+
+function createCommittee(session, data){
+  requirePermission(session, 'committees.manage');
+  var kind = data.committeeKind || 'Standalone';
+  var row = Object.assign({ id: uid('cmt'), createdAt: nowIso() }, data, { committeeKind: kind, status: 'Active' });
+  row.committeeNumber = (state.committees.length + 1);
+  updateColl('committees', function(a){ return a.concat([row]); });
+  if(kind === 'OBE'){
+    var at = { id: uid('cmt'), name: 'AT - ' + (data.name || 'OBE'), committeeKind: 'AT', parentCommitteeId: row.id, status: 'Active', formationDate: row.formationDate || todayIso(), createdAt: nowIso() };
+    var pt = { id: uid('cmt'), name: 'PT - ' + (data.name || 'OBE'), committeeKind: 'PT', parentCommitteeId: row.id, status: 'Active', formationDate: row.formationDate || todayIso(), createdAt: nowIso() };
+    updateColl('committees', function(a){ return a.concat([at, pt]); });
+  }
+}
+function addCommitteeMember(session, data){
+  requirePermission(session, 'committees.manage');
+  var existing = state.committeeMembers.filter(function(m){ return m.committeeId === data.committeeId && m.status === 'Active'; });
+  var row = Object.assign({ id: uid('cmm') }, data, { serialNo: existing.length + 1, status: 'Active', joinedAt: nowIso() });
+  updateColl('committeeMembers', function(a){ return a.concat([row]); });
+}
+function removeCommitteeMember(session, id){
+  requirePermission(session, 'committees.manage');
+  updateColl('committeeMembers', function(a){ return a.filter(function(m){ return m.id !== id; }); });
+}
+
+function addMeeting(session, data){
+  requirePermission(session, 'meetings.manage');
+  var row = Object.assign({ id: uid('cme'), createdAt: nowIso() }, data, { status: 'Pending' });
+  updateColl('committeeMeetings', function(a){ return a.concat([row]); });
+  notifyRole('chairman', 'Meeting Awaiting Approval', row.subject, { type: 'warn', relatedRoute: '#/app/meetings' });
+}
+function approveMeeting(session, id){
+  if(session.role !== 'chairman') throw new Error('Only Chairman');
+  updateColl('committeeMeetings', function(a){ return a.map(function(x){ return x.id === id ? Object.assign({}, x, { status: 'Approved', approvedAt: nowIso() }) : x; }); });
+}
+function deleteMeeting(session, id){
+  requirePermission(session, 'meetings.manage');
+  updateColl('committeeMeetings', function(a){ return a.filter(function(m){ return m.id !== id; }); });
+}
+
+function createParentMeeting(session, data){
+  if(session.role !== 'coordinator' && session.role !== 'chairman') throw new Error('Denied');
+  var row = Object.assign({ id: uid('ptm') }, data, { status: session.role === 'chairman' ? 'Approved' : 'Pending', createdAt: nowIso() });
+  updateColl('parentTeacherMeetings', function(a){ return a.concat([row]); });
+}
+function approveParentMeeting(session, id){
+  if(session.role !== 'chairman') throw new Error('Only Chairman');
+  updateColl('parentTeacherMeetings', function(a){ return a.map(function(x){ return x.id === id ? Object.assign({}, x, { status: 'Approved', approvedAt: nowIso() }) : x; }); });
+}
+
+function createAssignment(session, data){
+  if(session.role !== 'teacher' && session.role !== 'chairman') throw new Error('Denied');
+  var row = Object.assign({ id: uid('asg'), createdAt: nowIso() }, data, { teacherId: session.linkedId || session.userId, teacherName: session.displayName, status: 'Open' });
+  updateColl('assignments', function(a){ return a.concat([row]); });
+}
+function submitAssignment(session, data){
+  if(session.role !== 'student') throw new Error('Only students');
+  var row = { id: uid('sub'), assignmentId: data.assignmentId, studentId: session.linkedId, studentName: session.displayName, notes: data.notes || '', submittedAt: nowIso(), status: 'Submitted' };
+  updateColl('assignmentSubmissions', function(x){ return x.concat([row]); });
+}
+function gradeAssignment(session, subId, grade, feedback){
+  if(session.role !== 'teacher' && session.role !== 'chairman') throw new Error('Denied');
+  updateColl('assignmentSubmissions', function(a){ return a.map(function(s){ return s.id === subId ? Object.assign({}, s, { grade: grade, feedback: feedback || '', gradedAt: nowIso(), status: 'Graded' }) : s; }); });
+}
+
+function shareFile(session, data){
+  if(session.role !== 'chairman') throw new Error('Only Chairman');
+  var row = { id: uid('sf'), title: data.title, description: data.description || '', fileName: data.fileName, dataUrl: data.dataUrl, sharedWithRoles: data.sharedWithRoles || [], sharedBy: session.userId, sharedByName: session.displayName, sharedAt: nowIso() };
+  updateColl('sharedFiles', function(a){ return a.concat([row]); });
+}
+function deleteSharedFile(session, id){
+  if(session.role !== 'chairman') throw new Error('Denied');
+  updateColl('sharedFiles', function(a){ return a.filter(function(f){ return f.id !== id; }); });
+}
+function sharedFilesFor(session){
+  return state.sharedFiles.filter(function(f){
+    if(f.sharedBy === session.userId) return true;
+    if((f.sharedWithRoles || []).indexOf(session.role) >= 0) return true;
+    return false;
+  });
+}
+
+function checkClassReminders(){
+  var today = todayIso(), todayDay = dayOfWeek(new Date()), nowMin = t2m(new Date().toTimeString().slice(0, 5));
+  var store = {};
+  try { store = JSON.parse(localStorage.getItem('gct_reminders') || '{}'); } catch(e){}
+  state.timetable.filter(function(t){ return t.day === todayDay && t.status === 'Active'; }).forEach(function(slot){
+    var diff = t2m(slot.startTime) - nowMin;
+    if(diff >= 0 && diff <= 5){
+      var key = today + '_' + slot.id;
+      if(store[key]) return;
+      store[key] = true;
+      var c = state.courses.find(function(x){ return x.id === slot.courseId; });
+      var msg = (c ? c.code + ' ' + c.name : 'Class') + ' starts at ' + slot.startTime;
+      if(slot.teacherId) notifyUser(slot.teacherId, 'teacher', 'Class Starting Soon', msg, { relatedRoute: '#/app/my-timetable' });
+    }
+  });
+  try { localStorage.setItem('gct_reminders', JSON.stringify(store)); } catch(e){}
+}
+
+log('All business logic loaded');
+
+var ICONS = {
+  dashboard: 'D', bell: 'B', students: 'S', teacher: 'T', book: 'K', calendar: 'C',
+  check: 'V', qr: 'Q', chart: 'G', arrowUp: 'U', mail: 'M', users: 'P',
+  doc: 'F', settings: 'X', warning: 'W', download: 'L', clock: 'H', refresh: 'R',
+  plus: '+', logout: 'O', menu: '=', edit: 'E', trash: 'X', view: 'V', print: 'I',
+  clipboard: 'L', door: 'D', handshake: 'H', meet: 'M', user: 'U', form: 'F',
+  upload: '^', assignment: 'A', share: 'S', swap: 'W', pulse: 'P', building: 'B'
+};
+
+var NAV = {
+  chairman: [
+    { group: 'Overview', items: [
+      { label: 'Dashboard', path: '#/app/dashboard', icon: ICONS.dashboard },
+      { label: 'Notifications', path: '#/app/notifications', icon: ICONS.bell }
+    ]},
+    { group: 'Live Classes', items: [
+      { label: 'Live Monitor', path: '#/app/live-classes', icon: ICONS.pulse },
+      { label: 'Substitute Requests', path: '#/app/substitute-requests', icon: ICONS.swap }
+    ]},
+    { group: 'People', items: [
+      { label: 'Students', path: '#/app/students', icon: ICONS.students },
+      { label: 'Teachers', path: '#/app/teachers', icon: ICONS.teacher },
+      { label: 'Registrations', path: '#/app/registrations-admin', icon: ICONS.clipboard }
+    ]},
+    { group: 'Academics', items: [
+      { label: 'Courses', path: '#/app/courses', icon: ICONS.book },
+      { label: 'Topics', path: '#/app/topics', icon: ICONS.form },
+      { label: 'Timetable', path: '#/app/timetable', icon: ICONS.calendar },
+      { label: 'Attendance', path: '#/app/attendance', icon: ICONS.check },
+      { label: 'Subject %', path: '#/app/academics', icon: ICONS.chart },
+      { label: 'QR Control', path: '#/app/qr-control', icon: ICONS.qr },
+      { label: 'Late Scan', path: '#/app/late-scan-requests', icon: ICONS.clock },
+      { label: 'Promotions', path: '#/app/promotions', icon: ICONS.arrowUp },
+      { label: 'Assignments', path: '#/app/assignments', icon: ICONS.assignment }
+    ]},
+    { group: 'Leave', items: [
+      { label: 'Student Leaves', path: '#/app/leaves', icon: ICONS.mail },
+      { label: 'Teacher Leaves', path: '#/app/teacher-leaves', icon: ICONS.mail }
+    ]},
+    { group: 'Committees', items: [
+      { label: 'Committees', path: '#/app/committees', icon: ICONS.handshake },
+      { label: 'Meetings', path: '#/app/meetings', icon: ICONS.meet },
+      { label: 'PTMs', path: '#/app/parent-meetings', icon: ICONS.users }
+    ]},
+    { group: 'Admin', items: [
+      { label: 'Shared Files', path: '#/app/shared-files', icon: ICONS.share },
+      { label: 'Reports', path: '#/app/reports', icon: ICONS.doc },
+      { label: 'Warnings', path: '#/app/warnings', icon: ICONS.warning },
+      { label: 'Import', path: '#/app/import', icon: ICONS.upload },
+      { label: 'Audit', path: '#/app/audit', icon: ICONS.clock },
+      { label: 'Settings', path: '#/app/settings', icon: ICONS.settings },
+      { label: 'My Profile', path: '#/app/profile-self', icon: ICONS.user }
+    ]}
+  ],
+  teacher: [
+    { group: 'Overview', items: [
+      { label: 'Dashboard', path: '#/app/dashboard', icon: ICONS.dashboard },
+      { label: 'Notifications', path: '#/app/notifications', icon: ICONS.bell }
+    ]},
+    { group: 'Teaching', items: [
+      { label: 'My Classes', path: '#/app/my-classes', icon: ICONS.book },
+      { label: 'My Timetable', path: '#/app/my-timetable', icon: ICONS.calendar },
+      { label: 'QR Session', path: '#/app/qr/start', icon: ICONS.qr },
+      { label: 'Manual Attendance', path: '#/app/attendance/mark', icon: ICONS.check },
+      { label: 'Upload Topic', path: '#/app/topics', icon: ICONS.form },
+      { label: 'Assignments', path: '#/app/assignments', icon: ICONS.assignment }
+    ]},
+    { group: 'Students', items: [
+      { label: 'My Students', path: '#/app/students', icon: ICONS.students },
+      { label: 'Leave Requests', path: '#/app/leaves', icon: ICONS.mail },
+      { label: 'Substitute', path: '#/app/substitute-requests', icon: ICONS.swap }
+    ]},
+    { group: 'Personal', items: [
+      { label: 'My Leave', path: '#/app/teacher-leaves', icon: ICONS.mail },
+      { label: 'My Profile', path: '#/app/profile-self', icon: ICONS.user }
+    ]}
+  ],
+  coordinator: [
+    { group: 'Overview', items: [
+      { label: 'Dashboard', path: '#/app/dashboard', icon: ICONS.dashboard },
+      { label: 'Notifications', path: '#/app/notifications', icon: ICONS.bell }
+    ]},
+    { group: 'Committees', items: [
+      { label: 'All Committees', path: '#/app/committees', icon: ICONS.handshake },
+      { label: 'Meetings', path: '#/app/meetings', icon: ICONS.meet }
+    ]},
+    { group: 'Parents', items: [
+      { label: 'PTMs', path: '#/app/parent-meetings', icon: ICONS.users }
+    ]},
+    { group: 'Account', items: [
+      { label: 'My Profile', path: '#/app/profile-self', icon: ICONS.user }
+    ]}
+  ],
+  clerk: [
+    { group: 'Overview', items: [
+      { label: 'Dashboard', path: '#/app/dashboard', icon: ICONS.dashboard },
+      { label: 'Notifications', path: '#/app/notifications', icon: ICONS.bell }
+    ]},
+    { group: 'Students', items: [
+      { label: 'Student Records', path: '#/app/students', icon: ICONS.students },
+      { label: 'Promotions', path: '#/app/promotions', icon: ICONS.arrowUp },
+      { label: 'Import', path: '#/app/import', icon: ICONS.upload }
+    ]},
+    { group: 'Department', items: [
+      { label: 'Courses', path: '#/app/courses', icon: ICONS.book },
+      { label: 'Timetable', path: '#/app/timetable', icon: ICONS.calendar },
+      { label: 'Attendance', path: '#/app/attendance', icon: ICONS.check },
+      { label: 'Exit Records', path: '#/app/exit-records', icon: ICONS.door }
+    ]},
+    { group: 'Output', items: [
+      { label: 'Reports', path: '#/app/reports', icon: ICONS.doc },
+      { label: 'My Profile', path: '#/app/profile-self', icon: ICONS.user }
+    ]}
+  ],
+  student: [
+    { group: 'Overview', items: [
+      { label: 'Dashboard', path: '#/app/dashboard', icon: ICONS.dashboard },
+      { label: 'Notifications', path: '#/app/notifications', icon: ICONS.bell }
+    ]},
+    { group: 'My Info', items: [
+      { label: 'My Profile', path: '#/app/profile', icon: ICONS.user },
+      { label: 'My Timetable', path: '#/app/my-timetable', icon: ICONS.calendar },
+      { label: 'Attendance & Academics', path: '#/app/my-academics', icon: ICONS.chart }
+    ]},
+    { group: 'Academics', items: [
+      { label: 'My Assignments', path: '#/app/my-assignments', icon: ICONS.assignment }
+    ]},
+    { group: 'Leave', items: [
+      { label: 'My Leave', path: '#/app/my-leave', icon: ICONS.mail }
+    ]},
+    { group: 'Attendance', items: [
+      { label: 'QR Punch', path: '#/app/scan-qr', icon: ICONS.qr },
+      { label: 'My Warnings', path: '#/app/my-warnings', icon: ICONS.warning }
+    ]},
+    { group: 'Account', items: [
+      { label: 'Settings', path: '#/app/profile-self', icon: ICONS.settings }
+    ]}
+  ],
+  parent: [
+    { group: 'Overview', items: [
+      { label: 'Dashboard', path: '#/app/dashboard', icon: ICONS.dashboard },
+      { label: 'Notifications', path: '#/app/notifications', icon: ICONS.bell }
+    ]},
+    { group: 'My Child', items: [
+      { label: 'Child Profile', path: '#/app/child', icon: ICONS.user },
+      { label: 'Attendance', path: '#/app/child/attendance', icon: ICONS.check },
+      { label: 'Academics', path: '#/app/child/academics', icon: ICONS.chart },
+      { label: 'Leave', path: '#/app/child/leave', icon: ICONS.mail },
+      { label: 'Timetable', path: '#/app/child/timetable', icon: ICONS.calendar },
+      { label: 'Warnings', path: '#/app/child-warnings', icon: ICONS.warning }
+    ]},
+    { group: 'Account', items: [
+      { label: 'Settings', path: '#/app/profile-self', icon: ICONS.settings }
+    ]}
+  ]
+};
+
+function AppShell(o){
+  var session = o.session;
+  var menu = NAV[session.role] || [];
+  var initials = (session.displayName || 'U').split(' ').map(function(s){ return s[0]; }).slice(0, 2).join('').toUpperCase();
+  var bellUnread = unreadCount(session.userId, session.role, session.linkedId);
+  var dept = getDepartment(session.departmentId);
+  var navHtml = '';
+  menu.forEach(function(g){
+    navHtml += '<div class="nav-group"><div class="nav-group-title">' + esc(g.group) + '</div>';
+    g.items.forEach(function(it){
+      navHtml += '<a class="nav-item ' + (o.activePath === it.path ? 'active' : '') + '" href="' + it.path + '" data-nav="' + it.path + '"><span class="nav-icon">' + it.icon + '</span><span>' + esc(it.label) + '</span></a>';
+    });
+    navHtml += '</div>';
+  });
+  var avatarHtml = initials;
+  return {
+    html: '<div class="app-shell"><aside class="app-sidebar" id="appSidebar"><div class="brand"><div class="brand-logo">GCT</div><div class="brand-text"><strong>GCT Peshawar</strong><span>' + esc(dept.shortName) + ' ERP</span></div></div><nav class="nav">' + navHtml + '</nav></aside><div class="sidebar-backdrop" id="sidebarBackdrop"></div><main class="app-main"><header class="app-topbar"><button class="icon-btn mobile-only" id="menuBtn">=</button><div class="topbar-title">' + esc(o.title || '') + '</div><div class="topbar-actions"><a class="icon-btn" href="#/app/notifications" title="Notifications">B' + (bellUnread ? '<span class="icon-badge">' + bellUnread + '</span>' : '') + '</a><a class="user-chip" href="#/app/profile-self"><div class="user-avatar">' + avatarHtml + '</div><div class="user-meta"><strong>' + esc(session.displayName) + '</strong><span>' + esc(ROLE_LABELS[session.role]) + '</span></div></a><button class="icon-btn" id="logoutBtn">O</button></div></header><section class="app-content">' + o.childrenHtml + '</section></main></div>',
+    mount: function(root){
+      var sb = $('#appSidebar', root), bd = $('#sidebarBackdrop', root), mb = $('#menuBtn', root);
+      if(mb) mb.onclick = function(){ sb.classList.add('open'); bd.classList.add('open'); };
+      if(bd) bd.onclick = function(){ sb.classList.remove('open'); bd.classList.remove('open'); };
+      var lb = $('#logoutBtn', root);
+      if(lb) lb.onclick = function(){ authLogout(); location.hash = '#/login'; };
+      $$('[data-nav]', root).forEach(function(el){
+        el.addEventListener('click', function(e){
+          e.preventDefault();
+          var target = el.getAttribute('data-nav') || '';
+          if(target) location.hash = target;
+          sb.classList.remove('open'); bd.classList.remove('open');
+        });
+      });
+      if(o.onMount) o.onMount(root);
+    }
+  };
+}
+
+log('Shell loaded');
+
+function LoginPage(){
+  var departments = getDepartments();
+  var activeDeptId = getActiveDepartmentId();
+  var demoAccounts = makeDemoAccountsFor(activeDeptId).filter(function(a){ return a.status === 'Approved'; });
+  var mode = 'login';
+  return {
+    html: '<div class="login-page"><div class="login-left"><div><h1>GCT Peshawar ERP</h1><p class="sub">Multi-Department Management System<br/>QR Attendance - Leave Workflow - Live Classes</p><ul class="login-feature-list"><li>Chairman / Teacher / Coordinator / Clerk</li><li>Student / Parent roles</li><li>Teacher QR + Manual Attendance</li><li>Live Class Monitor + Substitutes</li></ul></div><div style="font-size:11px;opacity:0.6">(c) ' + new Date().getFullYear() + ' GCT Peshawar</div></div><div class="login-right"><div class="login-card"><h2 id="cardTitle">Sign in</h2><p class="sub" id="cardSub">Select department and login.</p><div class="field mb-2"><label>Department</label><select id="deptSelect">' + departments.map(function(d){ return '<option value="' + d.id + '" ' + (d.id === activeDeptId ? 'selected' : '') + '>' + esc(d.name) + '</option>'; }).join('') + '</select></div><div class="login-tabs"><button id="tabLogin" class="active">Login</button><button id="tabRegister">Register</button></div><form id="lf"><div class="field mb-2"><label>Email</label><input type="email" name="email" placeholder="you@gct.edu.pk" /></div><div class="field mb-2"><label>Password</label><input type="password" name="password" /></div><div class="field mb-2 hidden" id="fRole"><label>Register As</label><select name="role"><option value="teacher">Teacher</option><option value="student">Student</option><option value="parent">Parent</option></select></div><div class="field mb-2 hidden" id="fName"><label>Full Name</label><input name="displayName" /></div><div class="field mb-2 hidden" id="fPwd2"><label>Confirm Password</label><input type="password" name="password2" /></div><div id="em" style="color:#dc2626;font-size:12px;min-height:16px"></div><button type="submit" class="btn btn-primary btn-block mt-1" id="lb">Sign in</button></form><div class="quick-login" id="quickLogin"><label>Quick Login</label><select id="demoRole"><option value="">- Select Role -</option>' + demoAccounts.map(function(a){ return '<option value="' + esc(a.email) + '" data-pw="' + esc(a.password) + '">' + esc(ROLE_LABELS[a.role]) + ' - ' + esc(a.displayName) + '</option>'; }).join('') + '</select><div class="hint">Auto-fills credentials. Click Sign In.</div></div></div></div></div>',
+    mount: function(root){
+      var form = $('#lf', root), em = $('#em', root), lb = $('#lb', root);
+      var tabLogin = $('#tabLogin', root), tabRegister = $('#tabRegister', root);
+      var fRole = $('#fRole', root), fName = $('#fName', root), fPwd2 = $('#fPwd2', root);
+      var cardTitle = $('#cardTitle', root), cardSub = $('#cardSub', root), quickLogin = $('#quickLogin', root);
+      var deptSelect = $('#deptSelect', root), demoRole = $('#demoRole', root);
+
+      function refreshDemo(deptId){
+        var accs = makeDemoAccountsFor(deptId).filter(function(a){ return a.status === 'Approved'; });
+        demoRole.innerHTML = '<option value="">- Select Role -</option>' + accs.map(function(a){ return '<option value="' + esc(a.email) + '" data-pw="' + esc(a.password) + '">' + esc(ROLE_LABELS[a.role]) + ' - ' + esc(a.displayName) + '</option>'; }).join('');
+      }
+      function setMode(m){
+        mode = m;
+        tabLogin.classList.toggle('active', m === 'login');
+        tabRegister.classList.toggle('active', m === 'register');
+        fRole.classList.toggle('hidden', m !== 'register');
+        fName.classList.toggle('hidden', m !== 'register');
+        fPwd2.classList.toggle('hidden', m !== 'register');
+        quickLogin.classList.toggle('hidden', m !== 'login');
+        cardTitle.textContent = m === 'login' ? 'Sign in' : 'Create Account';
+        cardSub.textContent = m === 'login' ? 'Select department and login.' : 'Register - Chairman approval required.';
+        lb.textContent = m === 'login' ? 'Sign in' : 'Request Registration';
+      }
+      tabLogin.onclick = function(){ setMode('login'); };
+      tabRegister.onclick = function(){ setMode('register'); };
+      deptSelect.onchange = function(e){
+        var deptId = e.target.value;
+        refreshDemo(deptId);
+        em.style.color = '#065f46';
+        em.textContent = 'Switched to ' + getDepartment(deptId).shortName;
+      };
+      demoRole.onchange = function(e){
+        var opt = e.target.options[e.target.selectedIndex];
+        if(!opt || !opt.value) return;
+        form.email.value = opt.value;
+        form.password.value = opt.getAttribute('data-pw') || '';
+        em.style.color = '#065f46';
+        em.textContent = 'Credentials filled. Click Sign in.';
+      };
+      form.onsubmit = function(e){
+        e.preventDefault();
+        em.textContent = '';
+        lb.disabled = true;
+        lb.textContent = 'Processing...';
+        try {
+          if(mode === 'login'){
+            authLogin(form.email.value.trim(), form.password.value, deptSelect.value);
+          } else {
+            var data = {};
+            new FormData(form).forEach(function(v, k){ data[k] = v; });
+            if(!data.email || !data.password || !data.displayName) throw new Error('Fill all fields');
+            if(data.password !== data.password2) throw new Error('Passwords mismatch');
+            registerAccount(data);
+            em.style.color = '#065f46';
+            em.textContent = 'Submitted. Chairman approval required.';
+          }
+        } catch(err){
+          em.style.color = '#dc2626';
+          em.textContent = err.message || 'Failed';
+        }
+        lb.disabled = false;
+        lb.textContent = mode === 'login' ? 'Sign in' : 'Request Registration';
+      };
+    }
+  };
+}
+
+log('Login page loaded');
+
+function DashboardPage(ctx){
+  var session = ctx.session;
+  var settings = getSettings();
+  var body = '';
+
+  if(session.role === 'chairman'){
+    var students = state.students.filter(function(s){ return s.status === 'Active'; });
+    var pending = state.leaveApplications.filter(function(l){ return l.status === LEAVE_STATUS.WITH_CHAIRMAN; });
+    var pendingRegs = (state.accounts || []).filter(function(a){ return a.status === 'Pending'; });
+    var pendingSubs = state.substituteRequests.filter(function(s){ return s.status === SUBSTITUTE_STATUS.PENDING; });
+    var liveClasses = getLiveClasses();
+    var dept = getDepartment(session.departmentId);
+
+    body = '<div class="card" style="border-left:4px solid #d4a64b"><div class="card-body"><div class="row between wrap"><div><div style="font-size:12px;text-transform:uppercase;letter-spacing:0.8px;color:#6b7a94;font-weight:600">Current Department</div><h2 style="font-size:20px;color:#0f2d42;margin-top:4px">' + esc(dept.name) + '</h2><div class="muted">' + dept.durationYears + ' Years - ' + dept.totalSemesters + ' Semesters</div></div><span class="badge badge-gold">' + esc(dept.code) + '</span></div></div></div>';
+
+    body += '<div class="card" style="border-left:4px solid ' + (liveClasses.length ? '#10a469' : '#c5d0e0') + '"><div class="card-header"><h3>Live Classes Now (' + liveClasses.length + ')</h3></div><div class="card-body">';
+    if(liveClasses.length === 0){
+      body += '<div class="empty-state" style="padding:24px"><h4 style="font-size:14px">No live classes right now</h4></div>';
+    } else {
+      body += '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px">';
+      liveClasses.forEach(function(lc){
+        var sub = lc.substitute;
+        var teacherName = sub ? sub.substituteTeacherName : (lc.teacher ? lc.teacher.name : '-');
+        body += '<div class="card" style="border-left:4px solid #10a469"><div class="card-body"><span class="live-badge">LIVE NOW</span>' + (sub ? ' <span class="badge badge-warn">SUB</span>' : '') + '<div style="margin-top:10px;font-weight:700">' + esc(lc.course ? lc.course.code + ' - ' + lc.course.name : '') + '</div><div class="muted" style="margin-top:6px">Teacher: ' + esc(teacherName) + '</div><div class="muted">' + esc(lc.slot.className || '-') + ' - ' + esc(lc.slot.startTime) + '-' + esc(lc.slot.endTime) + '</div><div class="muted">' + esc(lc.semester ? lc.semester.name : '') + ' - Sec ' + esc(lc.section ? lc.section.name : '') + '</div></div></div>';
+      });
+      body += '</div>';
+    }
+    body += '</div></div>';
+
+    body += '<div class="stat-grid">' + statCard('Students', students.length, 'Active') + statCard('Teachers', state.teachers.length) + statCard('Live', liveClasses.length, 'Running', liveClasses.length ? 'success' : '') + statCard('Pending Subs', pendingSubs.length, '', pendingSubs.length ? 'warn' : '') + statCard('Registrations', pendingRegs.length, '', pendingRegs.length ? 'warn' : '') + statCard('Pending Leaves', pending.length, '', pending.length ? 'warn' : '') + statCard('QR', settings.qrAttendanceEnabled ? 'ENABLED' : 'DISABLED', '', settings.qrAttendanceEnabled ? 'success' : 'danger') + '</div>';
+
+    body += '<div class="card"><div class="card-header"><h3>Quick Actions</h3></div><div class="card-body"><div class="row wrap"><a class="btn btn-primary" href="#/app/live-classes">Live Monitor</a> <a class="btn btn-accent" href="#/app/substitute-requests">Substitutes</a> <a class="btn btn-ghost" href="#/app/qr-control">QR Control</a> <a class="btn btn-ghost" href="#/app/reports">Reports</a></div></div></div>';
+  } else if(session.role === 'teacher'){
+    var today = dayOfWeek(new Date());
+    var todaySlots = state.timetable.filter(function(t){ return t.teacherId === session.linkedId && t.day === today; });
+    var liveSlot = todaySlots.find(function(t){ var nowMin = t2m(new Date().toTimeString().slice(0,5)); return nowMin >= t2m(t.startTime) && nowMin < t2m(t.endTime); });
+    var subForMe = state.substituteRequests.filter(function(r){ return r.substituteTeacherId === session.linkedId && r.status === SUBSTITUTE_STATUS.PENDING; });
+    body = '<div class="card" style="border-left:4px solid #2a6a8f"><div class="card-body"><div class="row between wrap"><div><strong>Welcome, ' + esc(session.displayName) + '</strong><div class="muted mt-1">' + getDepartment(session.departmentId).shortName + ' - ' + today + '</div></div>' + (liveSlot ? '<span class="live-badge">YOUR CLASS IS LIVE</span>' : '<span class="badge badge-info">No live class</span>') + '</div>' + (liveSlot ? '<div class="mt-2 row wrap"><a class="btn btn-accent" href="#/app/qr/start">Start QR Now</a> <a class="btn btn-ghost" href="#/app/attendance/mark">Mark Attendance</a></div>' : '') + '</div></div>';
+    body += '<div class="stat-grid">' + statCard('My Classes', state.courseAssignments.filter(function(a){ return a.teacherId === session.linkedId; }).length) + statCard("Today's Classes", todaySlots.length) + statCard('Sub for Me', subForMe.length, '', subForMe.length ? 'warn' : '') + statCard('Assignments', state.assignments.filter(function(a){ return a.teacherId === session.linkedId; }).length) + '</div>';
+    body += '<div class="card"><div class="card-header"><h3>Quick Actions</h3></div><div class="card-body"><div class="row wrap"><a class="btn btn-accent" href="#/app/qr/start">Start QR</a> <a class="btn btn-primary" href="#/app/attendance/mark">Manual Attendance</a> <a class="btn btn-ghost" href="#/app/substitute-requests">Request Substitute</a></div></div></div>';
+  } else if(session.role === 'student'){
+    var stu = state.students.find(function(s){ return s.id === session.linkedId; });
+    if(!stu){
+      body = '<div class="empty-state"><h4>Not linked to student record</h4></div>';
+    } else {
+      var sum = attendanceSummary(stu.id);
+      body = '<div class="stat-grid">' + statCard('Attendance', sum.adjustedPercentage.toFixed(1) + '%', sum.present + 'P ' + sum.late + 'L ' + sum.absent + 'A', sum.isShortage ? 'danger' : 'success') + statCard('Status', sum.isShortage ? 'SHORTAGE' : 'ELIGIBLE', 'Threshold ' + settings.shortageThreshold + '%') + statCard('Late Count', sum.late) + statCard('Late Scan Today', hasLateApprovalToday(stu.id) ? 'APPROVED' : 'NO', '', hasLateApprovalToday(stu.id) ? 'success' : 'warn') + '</div>';
+    }
+  } else if(session.role === 'clerk'){
+    body = '<div class="stat-grid">' + statCard('Total Students', state.students.length) + statCard('Active', state.students.filter(function(s){ return s.status === 'Active'; }).length, '', 'success') + statCard('Courses', state.courses.length) + statCard('Attendance', state.attendanceRecords.length) + '</div>';
+  } else if(session.role === 'coordinator'){
+    body = '<div class="stat-grid">' + statCard('Committees', state.committees.length) + statCard('Active', state.committees.filter(function(c){ return c.status === 'Active'; }).length, '', 'success') + statCard('Meetings', state.committeeMeetings.length) + statCard('PTMs', state.parentTeacherMeetings.length) + '</div>';
+  } else if(session.role === 'parent'){
+    var link = state.parentLinks.find(function(l){ return l.parentId === session.linkedId && l.verified; });
+    var child = link ? state.students.find(function(s){ return s.id === link.studentId; }) : null;
+    if(!child){
+      body = '<div class="empty-state"><h4>No linked child</h4></div>';
+    } else {
+      var sum2 = attendanceSummary(child.id);
+      body = '<div class="stat-grid">' + statCard('Child', child.name) + statCard('Attendance', sum2.adjustedPercentage.toFixed(1) + '%', '', sum2.isShortage ? 'danger' : 'success') + '</div>';
+    }
+  }
+
+  return AppShell({ session: session, activePath: '#/app/dashboard', title: 'Dashboard', childrenHtml: body });
+}
+
+log('Dashboard loaded');
+
+function LiveClassesPage(ctx){
+  var s = ctx.session;
+  if(s.role !== 'chairman' && s.role !== 'coordinator'){
+    return AppShell({ session: s, activePath: '#/app/live-classes', title: 'Live Monitor', childrenHtml: '<div class="empty-state"><h4>Denied</h4></div>' });
+  }
+  var live = getLiveClasses();
+  var today = dayOfWeek(new Date());
+  var todaySlots = state.timetable.filter(function(t){ return t.day === today && t.status === 'Active'; }).sort(function(a, b){ return t2m(a.startTime) - t2m(b.startTime); });
+  var body = '<div class="card" style="border-left:4px solid #10a469"><div class="card-header"><h3>Live Now (' + live.length + ')</h3></div><div class="card-body">';
+  if(live.length === 0){
+    body += '<div class="empty-state" style="padding:30px"><h4 style="font-size:14px">No live classes</h4></div>';
+  } else {
+    body += '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px">';
+    live.forEach(function(lc){
+      var sub = lc.substitute;
+      body += '<div class="card" style="border-left:4px solid #10a469"><div class="card-body"><span class="live-badge">LIVE</span><h3 style="margin-top:10px;font-size:15px">' + esc(lc.course ? lc.course.code + ' - ' + lc.course.name : '') + '</h3><div style="margin-top:8px;font-size:12px"><div>Teacher: ' + esc(sub ? sub.substituteTeacherName : (lc.teacher ? lc.teacher.name : '-')) + '</div><div>Class: ' + esc(lc.slot.className || '-') + '</div><div>Time: ' + esc(lc.slot.startTime) + '-' + esc(lc.slot.endTime) + '</div></div></div></div>';
+    });
+    body += '</div>';
+  }
+  body += '</div></div>';
+  body += '<div class="card"><div class="card-header"><h3>Today Schedule (' + todaySlots.length + ')</h3></div><div class="card-body"><div class="table-wrap"><table class="data"><thead><tr><th>Time</th><th>Course</th><th>Teacher</th><th>Status</th></tr></thead><tbody>';
+  var nowMin = t2m(new Date().toTimeString().slice(0, 5));
+  todaySlots.forEach(function(t){
+    var c = state.courses.find(function(x){ return x.id === t.courseId; });
+    var te = state.teachers.find(function(x){ return x.id === t.teacherId; });
+    var st = t2m(t.startTime), en = t2m(t.endTime);
+    var status = '';
+    if(nowMin >= st && nowMin < en) status = '<span class="live-badge">LIVE</span>';
+    else if(nowMin < st && nowMin >= st - 30) status = '<span class="badge badge-warn">UPCOMING</span>';
+    else if(nowMin >= en) status = '<span class="badge badge-gray">PAST</span>';
+    else status = '<span class="badge badge-info">SCHEDULED</span>';
+    body += '<tr><td><strong>' + esc(t.startTime) + '-' + esc(t.endTime) + '</strong></td><td>' + esc(c ? c.code : '') + ' ' + esc(c ? c.name : '') + '</td><td>' + esc(te ? te.name : '') + '</td><td>' + status + '</td></tr>';
+  });
+  if(!todaySlots.length) body += '<tr><td colspan="4" class="empty">No classes.</td></tr>';
+  body += '</tbody></table></div></div></div>';
+  return AppShell({ session: s, activePath: '#/app/live-classes', title: 'Live Monitor', childrenHtml: body });
+}
+
+function SubstituteRequestsPage(ctx){
+  var s = ctx.session;
+  var canCreate = (s.role === 'teacher' || s.role === 'chairman');
+  var relevant = s.role === 'teacher' ? state.substituteRequests.filter(function(r){ return r.originalTeacherId === s.linkedId || r.substituteTeacherId === s.linkedId; }) : state.substituteRequests;
+  var body = '<div class="card"><div class="card-header"><h3>Substitute Requests (' + relevant.length + ')</h3>' + (canCreate ? '<button class="btn btn-primary btn-sm" id="newSubBtn" style="margin-left:auto">+ New</button>' : '') + '</div><div class="card-body"><p class="muted">Teachers request another teacher when <strong>late</strong> or <strong>on leave</strong>.</p><div class="table-wrap mt-2"><table class="data"><thead><tr><th>Date</th><th>Original</th><th>Substitute</th><th>Reason</th><th>Status</th><th></th></tr></thead><tbody>';
+  if(relevant.length === 0){
+    body += '<tr><td colspan="6" class="empty">No requests.</td></tr>';
+  } else {
+    relevant.forEach(function(r){
+      var badge = r.status === SUBSTITUTE_STATUS.ACCEPTED ? 'badge-success' : r.status === SUBSTITUTE_STATUS.DECLINED ? 'badge-danger' : 'badge-warn';
+      var actions = '';
+      if(s.role === 'teacher' && r.substituteTeacherId === s.linkedId && r.status === SUBSTITUTE_STATUS.PENDING){
+        actions = '<button class="btn btn-success btn-sm" data-accept="' + r.id + '">Accept</button> <button class="btn btn-danger btn-sm" data-decline="' + r.id + '">Decline</button>';
+      }
+      body += '<tr><td>' + fmtDate(r.date) + '</td><td>' + esc(r.originalTeacherName || '') + '</td><td><strong>' + esc(r.substituteTeacherName || '') + '</strong></td><td>' + esc(r.reason || '') + '</td><td><span class="badge ' + badge + '">' + esc(r.status) + '</span></td><td class="text-right">' + actions + '</td></tr>';
+    });
+  }
+  body += '</tbody></table></div></div></div>';
+  return AppShell({
+    session: s, activePath: '#/app/substitute-requests', title: 'Substitute Requests', childrenHtml: body,
+    onMount: function(root){
+      var b = $('#newSubBtn', root);
+      if(b) b.onclick = function(){ openSubstituteForm({ session: s, onSaved: function(){ renderRoute(); } }); };
+      $$('[data-accept]', root).forEach(function(btn){
+        btn.onclick = function(){
+          try { acceptSubstituteRequest(s, btn.dataset.accept); toast('Accepted', 'success'); renderRoute(); } catch(e){ toast(e.message, 'error'); }
+        };
+      });
+      $$('[data-decline]', root).forEach(function(btn){
+        btn.onclick = function(){
+          textInputDialog({ title: 'Decline', label: 'Reason', required: true, danger: true, submitLabel: 'Decline' }).then(function(r){
+            if(r === null) return;
+            try { declineSubstituteRequest(s, btn.dataset.decline, r); toast('Declined', 'success'); renderRoute(); } catch(e){ toast(e.message, 'error'); }
+          });
+        };
+      });
+    }
+  });
+}
+
+function openSubstituteForm(o){
+  var session = o.session, onSaved = o.onSaved;
+  var today = dayOfWeek(new Date());
+  var mySlots = state.timetable.filter(function(t){ return t.teacherId === session.linkedId && t.day === today; });
+  if(mySlots.length === 0){
+    toast('No classes today', 'warn');
+    return;
+  }
+  var bodyHtml = '<form id="subf"><div class="form-grid"><div class="field full"><label>My Class <span class="req">*</span></label><select name="slotId" id="slotSel"><option value="">- Select -</option>' + mySlots.map(function(t){ var c = state.courses.find(function(x){ return x.id === t.courseId; }); return '<option value="' + t.id + '">' + esc(t.startTime) + '-' + esc(t.endTime) + ' ' + esc(c ? c.code + ' ' + c.name : '') + '</option>'; }).join('') + '</select></div><div class="field"><label>Reason <span class="req">*</span></label><select name="reason"><option>Late Arrival</option><option>On Leave</option><option>Emergency</option><option>Other</option></select></div><div class="field full"><label>Substitute Teacher <span class="req">*</span></label><select name="substituteTeacherId" id="subSel"><option value="">- Select slot first -</option></select></div><div class="field full"><label>Note</label><textarea name="note" rows="2"></textarea></div></div></form>';
+  openModal({
+    title: 'Request Substitute', size: 'lg', bodyHtml: bodyHtml,
+    footerHtml: '<button class="btn btn-ghost" data-cancel>Cancel</button><button class="btn btn-accent" data-save>Send</button>',
+    onMount: function(root, close){
+      var slotSel = $('#slotSel', root), subSel = $('#subSel', root);
+      slotSel.onchange = function(){
+        var slotId = slotSel.value;
+        subSel.innerHTML = '<option value="">- Select -</option>';
+        if(!slotId) return;
+        var slot = state.timetable.find(function(t){ return t.id === slotId; });
+        if(!slot) return;
+        var avail = getAvailableTeachersForSlot(slot);
+        avail.forEach(function(t){
+          var opt = document.createElement('option');
+          opt.value = t.id; opt.textContent = t.name;
+          subSel.appendChild(opt);
+        });
+      };
+      root.querySelector('[data-cancel]').onclick = close;
+      root.querySelector('[data-save]').onclick = function(){
+        var d = {};
+        new FormData($('#subf', root)).forEach(function(v, k){ d[k] = v; });
+        if(!d.slotId || !d.substituteTeacherId){ toast('Fill required fields', 'error'); return; }
+        try { createSubstituteRequest(session, d); toast('Sent', 'success'); close(); if(onSaved) onSaved(); } catch(e){ toast(e.message, 'error'); }
+      };
+    }
+  });
+}
+
+function StudentsPage(ctx){
+  var session = ctx.session;
+  var canEdit = ['chairman', 'clerk'].indexOf(session.role) >= 0;
+  var canDelete = session.role === 'chairman';
+  var filters = { text: '', semesterId: '', sectionId: '', status: '' };
+  return AppShell({
+    session: session, activePath: '#/app/students', title: 'Students',
+    childrenHtml: '<div class="card"><div class="card-body"><div class="row wrap"><input id="ft" placeholder="Search..." style="flex:1;min-width:220px;padding:10px 12px;border:1px solid #c5d0e0;border-radius:8px" />' + (canEdit ? '<button class="btn btn-primary" id="nb">+ New</button>' : '') + '<button class="btn btn-ghost" id="csvBtn">CSV</button></div></div></div><div id="tbl"></div>',
+    onMount: function(root){
+      var render = function(){
+        if(!$('#tbl', root)) return;
+        var results = searchStudentsScoped(session, filters);
+        $('#tbl', root).innerHTML = '<div class="table-wrap"><table class="data"><thead><tr><th>Adm#</th><th>Reg#</th><th>Name</th><th>Father</th><th>Mobile</th><th>Status</th><th></th></tr></thead><tbody>' + (results.map(function(s){
+          return '<tr><td>' + esc(s.admissionNumber) + '</td><td>' + esc(s.registrationNumber) + '</td><td><strong>' + esc(s.name) + '</strong></td><td>' + esc(s.fatherName) + '</td><td>' + esc(s.studentMobile) + '</td><td><span class="badge ' + (s.status === 'Active' ? 'badge-success' : 'badge-gray') + '">' + esc(s.status) + '</span></td><td class="text-right">' + (canEdit ? '<button class="btn btn-ghost btn-sm" data-edit="' + s.id + '">E</button> ' : '') + (canDelete ? '<button class="btn btn-ghost btn-sm" data-del="' + s.id + '">X</button>' : '') + '</td></tr>';
+        }).join('') || '<tr><td colspan="7" class="empty">No students.</td></tr>') + '</tbody></table></div><div class="muted mt-1">' + results.length + ' results</div>';
+        $$('[data-edit]', root).forEach(function(b){ b.onclick = function(){ var stu = state.students.find(function(x){ return x.id === b.dataset.edit; }); openStudentForm({ session: session, existing: stu, onSaved: render }); }; });
+        $$('[data-del]', root).forEach(function(b){ b.onclick = function(){ confirmDialog({ title: 'Delete', message: 'Confirm?', confirmLabel: 'Delete', danger: true }).then(function(ok){ if(!ok) return; try { deleteStudent(session, b.dataset.del); toast('Deleted', 'success'); render(); } catch(e){ toast(e.message, 'error'); } }); }; });
+      };
+      var t;
+      $('#ft', root).oninput = function(e){ clearTimeout(t); t = setTimeout(function(){ filters.text = e.target.value; render(); }, 200); };
+      var nb = $('#nb', root); if(nb) nb.onclick = function(){ openStudentForm({ session: session, onSaved: render }); };
+      $('#csvBtn', root).onclick = function(){
+        var results = searchStudentsScoped(session, filters);
+        exportCsv('students.csv', ['Adm#', 'Reg#', 'Name', 'Father', 'Mobile', 'Status'], results.map(function(s){ return [s.admissionNumber, s.registrationNumber, s.name, s.fatherName, s.studentMobile, s.status]; }));
+      };
+      render();
+    }
+  });
+}
+
+function openStudentForm(o){
+  var session = o.session, existing = o.existing, onSaved = o.onSaved;
+  var isEdit = !!existing;
+  var v = existing || {};
+  var bodyHtml = '<form id="sf"><div class="form-grid"><div class="field"><label>Adm# <span class="req">*</span></label><input name="admissionNumber" value="' + esc(v.admissionNumber || '') + '" /></div><div class="field"><label>Reg# <span class="req">*</span></label><input name="registrationNumber" value="' + esc(v.registrationNumber || '') + '" /></div><div class="field"><label>Class# <span class="req">*</span></label><input name="classNumber" value="' + esc(v.classNumber || '') + '" /></div><div class="field full"><label>Name <span class="req">*</span></label><input name="name" value="' + esc(v.name || '') + '" /></div><div class="field"><label>Father <span class="req">*</span></label><input name="fatherName" value="' + esc(v.fatherName || '') + '" /></div><div class="field"><label>Mobile <span class="req">*</span></label><input name="studentMobile" value="' + esc(v.studentMobile || '') + '" /></div><div class="field"><label>Semester <span class="req">*</span></label><select name="currentSemesterId"><option value="">Select</option>' + state.semesters.map(function(s){ return '<option value="' + s.id + '" ' + (v.currentSemesterId === s.id ? 'selected' : '') + '>' + esc(s.name) + '</option>'; }).join('') + '</select></div><div class="field"><label>Section <span class="req">*</span></label><select name="currentSectionId"><option value="">Select</option>' + state.sections.map(function(s){ return '<option value="' + s.id + '" ' + (v.currentSectionId === s.id ? 'selected' : '') + '>' + esc(s.name) + '</option>'; }).join('') + '</select></div><div class="field"><label>Status</label><select name="status">' + STUDENT_STATUS.map(function(s){ return '<option ' + (v.status === s ? 'selected' : '') + '>' + s + '</option>'; }).join('') + '</select></div></div></form>';
+  openModal({
+    title: isEdit ? 'Edit Student' : 'New Student', size: 'lg', bodyHtml: bodyHtml,
+    footerHtml: '<button class="btn btn-ghost" data-cancel>Cancel</button><button class="btn btn-primary" data-save>' + (isEdit ? 'Update' : 'Create') + '</button>',
+    onMount: function(root, close){
+      root.querySelector('[data-cancel]').onclick = close;
+      root.querySelector('[data-save]').onclick = function(){
+        var data = {};
+        new FormData($('#sf', root)).forEach(function(v, k){ data[k] = v; });
+        try {
+          if(isEdit) updateStudent(session, existing.id, data);
+          else createStudent(session, data);
+          toast('Saved', 'success'); close(); if(onSaved) onSaved();
+        } catch(e){
+          if(e.validation) toast(Object.keys(e.validation).map(function(k){ return e.validation[k]; }).filter(Boolean).join(', '), 'error');
+          else toast(e.message || 'Failed', 'error');
+        }
+      };
+    }
+  });
+}
+
+log('Students page loaded');
+
+function CoursesPage(ctx){
+  var s = ctx.session;
+  var canManage = s.role === 'chairman' || s.role === 'clerk';
+  return AppShell({
+    session: s, activePath: '#/app/courses', title: 'Courses',
+    childrenHtml: '<div class="card"><div class="card-header"><h3>Courses (' + state.courses.length + ')</h3>' + (canManage ? '<button class="btn btn-primary btn-sm" id="nc" style="margin-left:auto">+ New</button>' : '') + '</div><div class="card-body"><div class="table-wrap"><table class="data"><thead><tr><th>Code</th><th>Name</th><th>Semester</th><th>Credits</th><th></th></tr></thead><tbody>' + (state.courses.map(function(c){
+      var sem = state.semesters.find(function(x){ return x.id === c.semesterId; });
+      return '<tr><td><strong>' + esc(c.code) + '</strong></td><td>' + esc(c.name) + '</td><td>' + esc(sem ? sem.name : '') + '</td><td>' + esc(c.creditHours) + '</td><td class="text-right">' + (canManage ? '<button class="btn btn-ghost btn-sm" data-edit="' + c.id + '">E</button> <button class="btn btn-ghost btn-sm" data-del="' + c.id + '">X</button>' : '') + '</td></tr>';
+    }).join('') || '<tr><td colspan="5" class="empty">No courses.</td></tr>') + '</tbody></table></div></div></div>',
+    onMount: function(root){
+      var b = $('#nc', root);
+      if(b) b.onclick = function(){ openCourseForm({ session: s, onSaved: function(){ renderRoute(); } }); };
+      $$('[data-edit]', root).forEach(function(b){ b.onclick = function(){ var c = state.courses.find(function(x){ return x.id === b.dataset.edit; }); openCourseForm({ session: s, existing: c, onSaved: function(){ renderRoute(); } }); }; });
+      $$('[data-del]', root).forEach(function(b){ b.onclick = function(){ confirmDialog({ title: 'Delete', message: 'Confirm?', confirmLabel: 'Delete', danger: true }).then(function(ok){ if(!ok) return; try { deleteCourse(s, b.dataset.del); toast('Deleted', 'success'); renderRoute(); } catch(e){ toast(e.message, 'error'); } }); }; });
+    }
+  });
+}
+
+function openCourseForm(o){
+  var session = o.session, existing = o.existing, onSaved = o.onSaved;
+  var isEdit = !!existing;
+  var v = existing || {};
+  var bodyHtml = '<form id="cf"><div class="form-grid"><div class="field"><label>Code <span class="req">*</span></label><input name="code" value="' + esc(v.code || '') + '" /></div><div class="field"><label>Credit Hours</label><input name="creditHours" type="number" min="1" max="6" value="' + esc(v.creditHours || 3) + '" /></div><div class="field full"><label>Name <span class="req">*</span></label><input name="name" value="' + esc(v.name || '') + '" /></div><div class="field"><label>Semester <span class="req">*</span></label><select name="semesterId"><option value="">Select</option>' + state.semesters.map(function(s){ return '<option value="' + s.id + '" ' + (v.semesterId === s.id ? 'selected' : '') + '>' + esc(s.name) + '</option>'; }).join('') + '</select></div></div></form>';
+  openModal({
+    title: isEdit ? 'Edit Course' : 'New Course', size: 'lg', bodyHtml: bodyHtml,
+    footerHtml: '<button class="btn btn-ghost" data-cancel>Cancel</button><button class="btn btn-primary" data-save>' + (isEdit ? 'Update' : 'Create') + '</button>',
+    onMount: function(root, close){
+      root.querySelector('[data-cancel]').onclick = close;
+      root.querySelector('[data-save]').onclick = function(){
+        var data = {};
+        new FormData($('#cf', root)).forEach(function(v, k){ data[k] = v; });
+        try {
+          if(isEdit) updateCourse(session, existing.id, data);
+          else createCourse(session, data);
+          toast('Saved', 'success'); close(); if(onSaved) onSaved();
+        } catch(e){
+          if(e.validation) toast(Object.keys(e.validation).map(function(k){ return e.validation[k]; }).join(', '), 'error');
+          else toast(e.message, 'error');
+        }
+      };
+    }
+  });
+}
+
+function TimetablePage(ctx){
+  var s = ctx.session;
+  var canManage = s.role === 'chairman' || s.role === 'clerk';
+  return AppShell({
+    session: s, activePath: '#/app/timetable', title: 'Timetable',
+    childrenHtml: '<div class="card"><div class="card-header"><h3>Timetable (' + state.timetable.length + ')</h3>' + (canManage ? '<button class="btn btn-primary btn-sm" id="ns" style="margin-left:auto">+ New</button>' : '') + '</div><div class="card-body"><div class="table-wrap"><table class="data"><thead><tr><th>Day</th><th>Time</th><th>Course</th><th>Teacher</th><th>Class</th><th>Status</th>' + (canManage ? '<th></th>' : '') + '</tr></thead><tbody id="ttBody"></tbody></table></div></div></div>',
+    onMount: function(root){
+      var render = function(){
+        var tb = $('#ttBody', root);
+        if(!tb) return;
+        var nowDay = dayOfWeek(new Date());
+        var nowMin = t2m(new Date().toTimeString().slice(0, 5));
+        var slots = state.timetable.slice().sort(function(a, b){ return DAYS.indexOf(a.day) - DAYS.indexOf(b.day) || t2m(a.startTime) - t2m(b.startTime); });
+        tb.innerHTML = slots.map(function(t){
+          var c = state.courses.find(function(x){ return x.id === t.courseId; });
+          var te = state.teachers.find(function(x){ return x.id === t.teacherId; });
+          var liveBadge = '', rowClass = '';
+          if(t.day === nowDay){
+            var st = t2m(t.startTime), en = t2m(t.endTime);
+            if(nowMin >= st && nowMin < en){ rowClass = 'slot-live'; liveBadge = '<span class="live-badge">LIVE</span>'; }
+            else if(nowMin < st && nowMin >= st - 30) liveBadge = '<span class="badge badge-warn">UPCOMING</span>';
+            else if(nowMin >= en) liveBadge = '<span class="badge badge-gray">PAST</span>';
+          }
+          return '<tr><td><strong>' + esc(t.day) + '</strong></td><td>' + esc(t.startTime) + '-' + esc(t.endTime) + '</td><td>' + esc(c ? c.code + ' ' + c.name : '') + '</td><td>' + esc(te ? te.name : '') + '</td><td>' + esc(t.className || '') + '</td><td>' + liveBadge + '</td>' + (canManage ? '<td class="text-right"><button class="btn btn-ghost btn-sm" data-del="' + t.id + '">X</button></td>' : '') + '</tr>';
+        }).join('') || '<tr><td colspan="' + (canManage ? 7 : 6) + '" class="empty">No slots.</td></tr>';
+        $$('[data-del]', root).forEach(function(b){ b.onclick = function(){ confirmDialog({ title: 'Delete', message: 'Confirm?', confirmLabel: 'Delete', danger: true }).then(function(ok){ if(!ok) return; try { deleteSlot(s, b.dataset.del); toast('Deleted', 'success'); render(); } catch(e){ toast(e.message, 'error'); } }); }; });
+      };
+      var b = $('#ns', root);
+      if(b) b.onclick = function(){ openTimetableForm({ session: s, onSaved: render }); };
+      render();
+    }
+  });
+}
+
+function openTimetableForm(o){
+  var session = o.session, onSaved = o.onSaved;
+  var bodyHtml = '<form id="tf"><div class="form-grid"><div class="field"><label>Day <span class="req">*</span></label><select name="day">' + DAYS.map(function(d){ return '<option>' + d + '</option>'; }).join('') + '</select></div><div class="field"><label>Start</label><input type="time" name="startTime" value="09:00" /></div><div class="field"><label>End</label><input type="time" name="endTime" value="10:00" /></div><div class="field"><label>Teacher</label><select name="teacherId">' + state.teachers.map(function(t){ return '<option value="' + t.id + '">' + esc(t.name) + '</option>'; }).join('') + '</select></div><div class="field"><label>Course</label><select name="courseId">' + state.courses.map(function(c){ return '<option value="' + c.id + '">' + esc(c.code + ' ' + c.name) + '</option>'; }).join('') + '</select></div><div class="field"><label>Semester</label><select name="semesterId">' + state.semesters.map(function(s){ return '<option value="' + s.id + '">' + esc(s.name) + '</option>'; }).join('') + '</select></div><div class="field"><label>Section</label><select name="sectionId">' + state.sections.map(function(s){ return '<option value="' + s.id + '">' + esc(s.name) + '</option>'; }).join('') + '</select></div><div class="field"><label>Class Room</label><input name="className" /></div><div class="field"><label>Type</label><select name="slotType"><option>Theory</option><option>Practical</option></select></div></div></form>';
+  openModal({
+    title: 'New Slot', size: 'lg', bodyHtml: bodyHtml,
+    footerHtml: '<button class="btn btn-ghost" data-cancel>Cancel</button><button class="btn btn-primary" data-save>Create</button>',
+    onMount: function(root, close){
+      root.querySelector('[data-cancel]').onclick = close;
+      root.querySelector('[data-save]').onclick = function(){
+        var data = {};
+        new FormData($('#tf', root)).forEach(function(v, k){ data[k] = v; });
+        try { createSlot(session, data); toast('Created', 'success'); close(); if(onSaved) onSaved(); } catch(e){ toast(e.message, 'error'); }
+      };
+    }
+  });
+}
+
+log('Courses + Timetable loaded');
+
+function QrStartPage(ctx){
+  var s = ctx.session;
+  if(s.role !== 'teacher' && s.role !== 'chairman'){
+    return AppShell({ session: s, activePath: '#/app/qr/start', title: 'QR Session', childrenHtml: '<div class="empty-state"><h4>Denied</h4></div>' });
+  }
+  var enabled = isQrEnabled();
+  var today = dayOfWeek(new Date());
+  var todaySlots = state.timetable.filter(function(t){ return t.teacherId === s.linkedId && t.day === today; });
+  var body = '<div class="card" style="border-left:4px solid ' + (enabled ? '#10a469' : '#dc2626') + '"><div class="card-body">' + (enabled ? '<span class="badge badge-success">ENABLED</span>' : '<span class="badge badge-danger">DISABLED by Chairman</span>') + '</div></div>';
+  body += '<div class="card"><div class="card-header"><h3>Today Classes (' + todaySlots.length + ')</h3></div><div class="card-body">';
+  if(todaySlots.length === 0){
+    body += '<div class="empty-state" style="padding:30px"><h4 style="font-size:14px">No classes today</h4></div>';
+  } else {
+    body += '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px">';
+    todaySlots.forEach(function(t){
+      var c = state.courses.find(function(x){ return x.id === t.courseId; });
+      var nowMin = t2m(new Date().toTimeString().slice(0, 5));
+      var st = t2m(t.startTime), en = t2m(t.endTime);
+      var isLive = nowMin >= st && nowMin < en;
+      body += '<div class="card" style="' + (isLive ? 'border-left:4px solid #10a469' : '') + '"><div class="card-body">' + (isLive ? '<span class="live-badge">LIVE</span>' : '') + '<h3 style="margin-top:8px;font-size:14px">' + esc(c ? c.code + ' - ' + c.name : '') + '</h3><div class="muted" style="margin-top:6px;font-size:12px">' + esc(t.startTime) + '-' + esc(t.endTime) + ' ' + esc(t.className || '') + '</div><div style="margin-top:10px"><button class="btn btn-accent btn-block" data-start="' + t.id + '" ' + (enabled ? '' : 'disabled') + '>Start QR</button></div></div></div>';
+    });
+    body += '</div>';
+  }
+  body += '</div></div><div id="qrBox" class="mt-3"></div>';
+  return AppShell({
+    session: s, activePath: '#/app/qr/start', title: 'QR Session', childrenHtml: body,
+    onMount: function(root){
+      $$('[data-start]', root).forEach(function(b){
+        b.onclick = function(){
+          try {
+            var sess = startQrSession(s, { timetableId: b.dataset.start });
+            var slot = state.timetable.find(function(x){ return x.id === b.dataset.start; });
+            var c = state.courses.find(function(x){ return x.id === slot.courseId; });
+            var box = $('#qrBox', root);
+            box.innerHTML = '<div class="card"><div class="card-header"><h3>Live QR - ' + esc(slot.className || '') + '</h3><button class="btn btn-danger btn-sm" id="closeBtn" style="margin-left:auto">Close</button></div><div class="card-body" style="text-align:center"><div style="background:#fff;border:2px solid #153a56;border-radius:12px;padding:18px;max-width:420px;margin:0 auto"><h2 style="font-size:14px">' + esc(getSettings().collegeName) + '</h2><h3 style="font-size:11px">' + esc(getSettings().departmentName) + '</h3><div style="font-size:12px;margin:10px 0">Subject: ' + esc(c ? c.code + ' - ' + c.name : '') + '<br/>Class: ' + esc(slot.className || '') + '<br/>Time: ' + esc(slot.startTime) + '-' + esc(slot.endTime) + '</div><div id="cvWrap" style="padding:14px;background:#f6f8fc;border-radius:8px;margin:12px 0"></div><div style="font-size:10px;color:#dc2626">Late scanners need approval</div></div><div class="muted mt-2">Expires: ' + fmtDT(sess.qrExpiresAt) + '</div><button class="btn btn-ghost btn-sm mt-2" id="rotBtn">Rotate</button></div></div>';
+            var cv = document.createElement('canvas');
+            cv.style.maxWidth = '220px';
+            cv.style.display = 'inline-block';
+            $('#cvWrap', box).appendChild(cv);
+            QR.draw(cv, sess.qrToken);
+            $('#rotBtn', box).onclick = function(){
+              rotateQr(s, sess.id);
+              var s2 = state.attendanceSessions.find(function(x){ return x.id === sess.id; });
+              if(s2) QR.draw(cv, s2.qrToken);
+              toast('Rotated', 'success');
+            };
+            $('#closeBtn', box).onclick = function(){
+              confirmDialog({ title: 'Close Session', message: 'End?', confirmLabel: 'Close', danger: true }).then(function(ok){
+                if(!ok) return;
+                closeSession(s, sess.id);
+                toast('Closed', 'success');
+                renderRoute();
+              });
+            };
+          } catch(e){ toast(e.message, 'error'); }
+        };
+      });
+    }
+  });
+}
+
+function QrScanPage(ctx){
+  var s = ctx.session;
+  var enabled = isQrEnabled();
+  var approvedToday = hasLateApprovalToday(s.linkedId);
+  return AppShell({
+    session: s, activePath: '#/app/scan-qr', title: 'QR Punch',
+    childrenHtml: '<div class="card"><div class="card-body">' + (enabled ? '<span class="badge badge-success">ENABLED</span>' : '<span class="badge badge-danger">DISABLED</span>') + (approvedToday ? ' <span class="badge badge-success">Late APPROVED</span>' : '') + '</div></div>' +
+      '<div class="card"><div class="card-header"><h3>Enter QR Token</h3></div><div class="card-body"><form id="qf"><div class="field full"><label>QR Token</label><input name="token" placeholder="qr_..." /></div><div class="row mt-2"><button type="submit" class="btn btn-primary">Punch In</button><button type="button" class="btn btn-warn" id="reqLateBtn">Request Late</button></div></form></div></div>',
+    onMount: function(root){
+      $('#qf', root).onsubmit = function(e){
+        e.preventDefault();
+        var tok = $('input[name=token]', root).value.trim();
+        try { scanQr(s, { token: tok, studentId: s.linkedId }); toast('Marked', 'success'); renderRoute(); }
+        catch(err){ toast(err.message, 'error'); }
+      };
+      $('#reqLateBtn', root).onclick = function(){
+        textInputDialog({ title: 'Request Late Scan', label: 'Reason', required: true, submitLabel: 'Send' }).then(function(r){
+          if(r === null) return;
+          try { requestLateScanApproval(s, { reason: r }); toast('Sent', 'success'); renderRoute(); } catch(e){ toast(e.message, 'error'); }
+        });
+      };
+    }
+  });
+}
+
+function AttendanceMarkPage(ctx){
+  var s = ctx.session;
+  var today = dayOfWeek(new Date());
+  var todaySlots = state.timetable.filter(function(t){ return (s.role === 'teacher' ? t.teacherId === s.linkedId : true) && t.day === today; });
+  var body = '<div class="card"><div class="card-header"><h3>Manual Attendance - Today (' + todaySlots.length + ')</h3></div><div class="card-body"><p class="muted">Use when student has no mobile/internet.</p>';
+  if(todaySlots.length === 0){
+    body += '<div class="empty-state" style="padding:30px"><h4 style="font-size:14px">No classes today</h4></div>';
+  } else {
+    body += '<div class="table-wrap mt-2"><table class="data"><thead><tr><th>Time</th><th>Course</th><th>Students</th><th></th></tr></thead><tbody>';
+    todaySlots.forEach(function(t){
+      var c = state.courses.find(function(x){ return x.id === t.courseId; });
+      var students = state.students.filter(function(st){ return st.currentSemesterId === t.semesterId && st.currentSectionId === t.sectionId && st.status === 'Active'; });
+      body += '<tr><td><strong>' + esc(t.startTime) + '-' + esc(t.endTime) + '</strong></td><td>' + esc(c ? c.code + ' ' + c.name : '') + '</td><td>' + students.length + '</td><td><button class="btn btn-primary btn-sm" data-mark="' + t.id + '">Mark</button></td></tr>';
+    });
+    body += '</tbody></table></div>';
+  }
+  body += '</div></div>';
+  return AppShell({
+    session: s, activePath: '#/app/attendance/mark', title: 'Mark Attendance', childrenHtml: body,
+    onMount: function(root){
+      $$('[data-mark]', root).forEach(function(b){
+        b.onclick = function(){ openManualAttendance({ session: s, timetableId: b.dataset.mark, onSaved: function(){ renderRoute(); } }); };
+      });
+    }
+  });
+}
+
+function openManualAttendance(o){
+  var session = o.session, timetableId = o.timetableId, onSaved = o.onSaved;
+  var slot = state.timetable.find(function(t){ return t.id === timetableId; });
+  if(!slot){ toast('Not found', 'error'); return; }
+  var c = state.courses.find(function(x){ return x.id === slot.courseId; });
+  var students = state.students.filter(function(s){ return s.currentSemesterId === slot.semesterId && s.currentSectionId === slot.sectionId && s.status === 'Active'; });
+  var today = todayIso();
+  var rowsHtml = students.map(function(stu){
+    var existing = state.attendanceRecords.find(function(r){ return r.studentId === stu.id && r.date === today && r.courseId === slot.courseId; });
+    var status = existing ? existing.status : '';
+    return '<tr data-sid="' + stu.id + '"><td><strong>' + esc(stu.name) + '</strong></td><td>' + (existing ? '<span class="badge badge-info">' + esc(status) + '</span>' : 'Not marked') + '</td><td><select class="mark-select" ' + (existing ? 'disabled' : '') + '><option value="">-</option><option value="present" ' + (status === 'present' ? 'selected' : '') + '>Present</option><option value="late" ' + (status === 'late' ? 'selected' : '') + '>Late</option><option value="absent" ' + (status === 'absent' ? 'selected' : '') + '>Absent</option><option value="approved_leave" ' + (status === 'approved_leave' ? 'selected' : '') + '>On Leave</option></select></td></tr>';
+  }).join('');
+  var bodyHtml = '<div style="background:#eff6ff;border-left:4px solid #2563eb;padding:12px;border-radius:8px;margin-bottom:14px"><strong>' + esc(c ? c.code + ' - ' + c.name : '') + '</strong> - ' + esc(slot.className || '') + '<br/>' + esc(slot.startTime) + '-' + esc(slot.endTime) + '</div><div class="row mb-2"><button class="btn btn-success btn-sm" id="bulkPresent">Mark All Present</button></div><div class="table-wrap" style="max-height:400px;overflow-y:auto"><table class="data"><thead><tr><th>Student</th><th>Current</th><th>Set</th></tr></thead><tbody>' + rowsHtml + '</tbody></table></div>';
+  openModal({
+    title: 'Manual Attendance', size: 'lg', bodyHtml: bodyHtml,
+    footerHtml: '<button class="btn btn-ghost" data-cancel>Cancel</button><button class="btn btn-primary" data-save>Save</button>',
+    onMount: function(root, close){
+      var selects = $$('.mark-select', root);
+      $('#bulkPresent', root).onclick = function(){
+        selects.forEach(function(sel){ if(!sel.disabled) sel.value = 'present'; });
+      };
+      root.querySelector('[data-cancel]').onclick = close;
+      root.querySelector('[data-save]').onclick = function(){
+        var count = 0;
+        $$('tr[data-sid]', root).forEach(function(tr){
+          var sid = tr.getAttribute('data-sid');
+          var sel = $('.mark-select', tr);
+          if(sel.disabled) return;
+          var status = sel.value;
+          if(!status) return;
+          try {
+            manualAttendance(session, { studentId: sid, courseId: slot.courseId, date: today, scheduledTime: slot.startTime, status: status, lateMinutes: status === 'late' ? 10 : 0, timetableId: slot.id, teacherId: slot.teacherId, manualReason: 'Manual' });
+            count++;
+          } catch(e){}
+        });
+        if(count > 0) toast(count + ' marked', 'success');
+        close(); if(onSaved) onSaved();
+      };
+    }
+  });
+}
+
+log('QR + Attendance pages loaded');
+
+function LeavesPage(ctx){
+  var s = ctx.session;
+  var leaves = state.leaveApplications.slice().sort(function(a, b){ return new Date(b.submittedAt) - new Date(a.submittedAt); });
+  return AppShell({
+    session: s, activePath: '#/app/leaves', title: 'Leave Requests',
+    childrenHtml: '<div class="card"><div class="card-header"><h3>Student Leaves (' + leaves.length + ')</h3></div><div class="card-body"><div class="table-wrap"><table class="data"><thead><tr><th>Student</th><th>Type</th><th>From</th><th>To</th><th>Status</th><th></th></tr></thead><tbody>' + (leaves.map(function(l){
+      var stu = state.students.find(function(x){ return x.id === l.studentId; });
+      var badge = l.status === 'approved' ? 'badge-success' : l.status === 'rejected' ? 'badge-danger' : 'badge-warn';
+      var actions = '';
+      if(s.role === 'teacher' && l.status === 'with_teacher') actions = '<button class="btn btn-primary btn-sm" data-fwd="' + l.id + '">Forward</button>';
+      if(s.role === 'chairman' && l.status === 'with_chairman') actions = '<button class="btn btn-success btn-sm" data-ap="' + l.id + '">Approve</button> <button class="btn btn-danger btn-sm" data-rj="' + l.id + '">Reject</button>';
+      return '<tr><td><strong>' + esc(stu ? stu.name : '') + '</strong></td><td>' + esc(l.leaveType) + '</td><td>' + fmtDate(l.startDate) + '</td><td>' + fmtDate(l.endDate) + '</td><td><span class="badge ' + badge + '">' + esc(l.status) + '</span></td><td class="text-right">' + actions + '</td></tr>';
+    }).join('') || '<tr><td colspan="6" class="empty">No leaves.</td></tr>') + '</tbody></table></div></div></div>',
+    onMount: function(root){
+      $$('[data-fwd]', root).forEach(function(b){ b.onclick = function(){ textInputDialog({ title: 'Forward', label: 'Remarks', submitLabel: 'Forward' }).then(function(r){ if(r === null) return; try { teacherForward(s, b.dataset.fwd, r); toast('Forwarded', 'success'); renderRoute(); } catch(e){ toast(e.message, 'error'); } }); }; });
+      $$('[data-ap]', root).forEach(function(b){ b.onclick = function(){ textInputDialog({ title: 'Approve', label: 'Reason', required: true, submitLabel: 'Approve' }).then(function(r){ if(r === null) return; try { chairmanDecide(s, b.dataset.ap, 'approve', r); toast('Approved', 'success'); renderRoute(); } catch(e){ toast(e.message, 'error'); } }); }; });
+      $$('[data-rj]', root).forEach(function(b){ b.onclick = function(){ textInputDialog({ title: 'Reject', label: 'Reason', required: true, danger: true, submitLabel: 'Reject' }).then(function(r){ if(r === null) return; try { chairmanDecide(s, b.dataset.rj, 'reject', r); toast('Rejected', 'success'); renderRoute(); } catch(e){ toast(e.message, 'error'); } }); }; });
+    }
+  });
+}
+
+function MyLeavePage(ctx){
+  var s = ctx.session;
+  var mine = state.leaveApplications.filter(function(l){ return l.studentId === s.linkedId; });
+  return AppShell({
+    session: s, activePath: '#/app/my-leave', title: 'My Leave',
+    childrenHtml: '<div class="card"><div class="card-header"><h3>Apply</h3></div><div class="card-body"><form id="lf"><div class="form-grid"><div class="field"><label>Type</label><select name="leaveType">' + LEAVE_TYPES.map(function(t){ return '<option>' + t + '</option>'; }).join('') + '</select></div><div class="field"><label>Start</label><input name="startDate" type="date" value="' + todayIso() + '" /></div><div class="field"><label>End</label><input name="endDate" type="date" value="' + todayIso() + '" /></div><div class="field full"><label>Reason <span class="req">*</span></label><input name="reason" required /></div></div><button type="submit" class="btn btn-primary mt-2">Submit</button></form></div></div>' +
+      '<div class="card"><div class="card-header"><h3>History (' + mine.length + ')</h3></div><div class="card-body"><div class="table-wrap"><table class="data"><thead><tr><th>Type</th><th>From</th><th>To</th><th>Status</th></tr></thead><tbody>' + (mine.map(function(l){ return '<tr><td>' + esc(l.leaveType) + '</td><td>' + fmtDate(l.startDate) + '</td><td>' + fmtDate(l.endDate) + '</td><td><span class="badge ' + (l.status === 'approved' ? 'badge-success' : 'badge-warn') + '">' + esc(l.status) + '</span></td></tr>'; }).join('') || '<tr><td colspan="4" class="empty">No leaves.</td></tr>') + '</tbody></table></div></div></div>',
+    onMount: function(root){
+      $('#lf', root).onsubmit = function(e){
+        e.preventDefault();
+        var d = {};
+        new FormData(e.target).forEach(function(v, k){ d[k] = v; });
+        try { submitStudentLeave(s, d); toast('Submitted', 'success'); renderRoute(); }
+        catch(err){ toast(err.message, 'error'); }
+      };
+    }
+  });
+}
+
+function TeacherLeavesPage(ctx){
+  var s = ctx.session;
+  var mine = state.teacherLeaveApplications.filter(function(l){ return l.teacherId === s.linkedId; });
+  var all = s.role === 'chairman' ? state.teacherLeaveApplications : mine;
+  return AppShell({
+    session: s, activePath: '#/app/teacher-leaves', title: 'Teacher Leaves',
+    childrenHtml: (s.role === 'teacher' ? '<div class="card"><div class="card-header"><h3>Apply</h3></div><div class="card-body"><form id="tlf"><div class="form-grid"><div class="field"><label>Type</label><select name="leaveType">' + LEAVE_TYPES.map(function(t){ return '<option>' + t + '</option>'; }).join('') + '</select></div><div class="field"><label>Start</label><input name="startDate" type="date" value="' + todayIso() + '" /></div><div class="field"><label>End</label><input name="endDate" type="date" value="' + todayIso() + '" /></div><div class="field full"><label>Reason <span class="req">*</span></label><input name="reason" required /></div></div><button type="submit" class="btn btn-primary mt-2">Submit</button></form></div></div>' : '') +
+      '<div class="card"><div class="card-header"><h3>' + (s.role === 'chairman' ? 'All Teacher Leaves' : 'My Applications') + ' (' + all.length + ')</h3></div><div class="card-body"><div class="table-wrap"><table class="data"><thead><tr><th>Teacher</th><th>Type</th><th>From</th><th>Status</th><th></th></tr></thead><tbody>' + (all.map(function(l){
+        var badge = l.status === 'approved' ? 'badge-success' : 'badge-warn';
+        var act = s.role === 'chairman' && l.status === 'with_chairman' ? '<button class="btn btn-success btn-sm" data-ap="' + l.id + '">Approve</button> <button class="btn btn-danger btn-sm" data-rj="' + l.id + '">Reject</button>' : '';
+        return '<tr><td>' + esc(l.teacherName || '') + '</td><td>' + esc(l.leaveType) + '</td><td>' + fmtDate(l.startDate) + '</td><td><span class="badge ' + badge + '">' + esc(l.status) + '</span></td><td class="text-right">' + act + '</td></tr>';
+      }).join('') || '<tr><td colspan="5" class="empty">No leaves.</td></tr>') + '</tbody></table></div></div></div>',
+    onMount: function(root){
+      var f = $('#tlf', root);
+      if(f) f.onsubmit = function(e){ e.preventDefault(); var d = {}; new FormData(e.target).forEach(function(v, k){ d[k] = v; }); try { submitTeacherLeave(s, d); toast('Submitted', 'success'); renderRoute(); } catch(err){ toast(err.message, 'error'); } };
+      $$('[data-ap]', root).forEach(function(b){ b.onclick = function(){ textInputDialog({ title: 'Approve', label: 'Reason', required: true, submitLabel: 'Approve' }).then(function(r){ if(r === null) return; try { decideTeacherLeave(s, b.dataset.ap, 'approve', r); toast('Approved', 'success'); renderRoute(); } catch(e){ toast(e.message, 'error'); } }); }; });
+      $$('[data-rj]', root).forEach(function(b){ b.onclick = function(){ textInputDialog({ title: 'Reject', label: 'Reason', required: true, danger: true, submitLabel: 'Reject' }).then(function(r){ if(r === null) return; try { decideTeacherLeave(s, b.dataset.rj, 'reject', r); toast('Rejected', 'success'); renderRoute(); } catch(e){ toast(e.message, 'error'); } }); }; });
+    }
+  });
+}
+
+function NotificationsPage(ctx){
+  var s = ctx.session;
+  var notifs = notifsFor(s.userId, s.role, s.linkedId);
+  return AppShell({
+    session: s, activePath: '#/app/notifications', title: 'Notifications',
+    childrenHtml: '<div class="card"><div class="card-header"><h3>Notifications (' + notifs.length + ')</h3><button class="btn btn-ghost btn-sm" id="mr" style="margin-left:auto">Mark all read</button></div><div class="card-body">' + (notifs.map(function(n){
+      var badge = n.type === 'success' ? 'badge-success' : n.type === 'error' ? 'badge-danger' : n.type === 'warn' ? 'badge-warn' : 'badge-info';
+      return '<div class="card" style="padding:12px;margin-bottom:8px;cursor:pointer" data-nid="' + n.id + '" data-route="' + esc(n.relatedRoute || '') + '"><strong>' + esc(n.title) + '</strong> <span class="badge ' + badge + '">' + esc(n.type) + '</span><div class="muted mt-1">' + esc(n.message) + '</div><div class="muted" style="font-size:10px;margin-top:4px">' + fmtDT(n.createdAt) + '</div></div>';
+    }).join('') || '<div class="empty-state"><h4>No notifications</h4></div>') + '</div></div>',
+    onMount: function(root){
+      $('#mr', root).onclick = function(){ markAllRead(s.userId, s.role, s.linkedId); toast('Marked read', 'success'); renderRoute(); };
+      $$('[data-nid]', root).forEach(function(el){
+        el.onclick = function(){
+          var nid = el.dataset.nid, route = el.dataset.route;
+          if(nid) markNotifRead(nid);
+          if(route) location.hash = route;
+          else renderRoute();
+        };
+      });
+    }
+  });
+}
+
+function MyProfilePage(ctx){
+  var s = ctx.session;
+  return AppShell({
+    session: s, activePath: '#/app/profile-self', title: 'My Profile',
+    childrenHtml: '<div class="card"><div class="card-body"><h3>' + esc(s.displayName) + '</h3><div class="muted">' + esc(ROLE_LABELS[s.role]) + ' - ' + esc(s.email) + '</div><div class="muted">' + esc(getDepartment(s.departmentId).name) + '</div></div></div>' +
+      '<div class="card"><div class="card-header"><h3>Change Password</h3></div><div class="card-body"><form id="pwf"><div class="form-grid"><div class="field"><label>Current</label><input name="oldPwd" type="password" /></div><div class="field"><label>New</label><input name="newPwd" type="password" /></div></div><button type="submit" class="btn btn-primary mt-2">Change</button></form></div></div>',
+    onMount: function(root){
+      $('#pwf', root).onsubmit = function(e){
+        e.preventDefault();
+        var d = {};
+        new FormData(e.target).forEach(function(v, k){ d[k] = v; });
+        try { changeOwnPassword(s, d.oldPwd, d.newPwd); toast('Changed', 'success'); }
+        catch(err){ toast(err.message, 'error'); }
+      };
+    }
+  });
+}
+
+function SettingsPage(ctx){
+  var s = ctx.session;
+  if(s.role !== 'chairman') return AppShell({ session: s, activePath: '#/app/settings', title: 'Settings', childrenHtml: '<div class="empty-state"><h4>Only Chairman</h4></div>' });
+  var st = getSettings();
+  return AppShell({
+    session: s, activePath: '#/app/settings', title: 'Settings',
+    childrenHtml: '<div class="card"><div class="card-header"><h3>Department Settings</h3></div><div class="card-body"><form id="sf"><div class="form-grid"><div class="field full"><label>College Name</label><input name="collegeName" value="' + esc(st.collegeName) + '" /></div><div class="field full"><label>Department Name</label><input name="departmentName" value="' + esc(st.departmentName) + '" /></div><div class="field full"><label>Address</label><input name="address" value="' + esc(st.address) + '" /></div><div class="field"><label>Shortage %</label><input name="shortageThreshold" type="number" value="' + st.shortageThreshold + '" /></div><div class="field"><label>Late to Absence</label><input name="lateToAbsenceThreshold" type="number" value="' + st.lateToAbsenceThreshold + '" /></div><div class="field"><label>QR Validity (sec)</label><input name="qrValiditySeconds" type="number" value="' + st.qrValiditySeconds + '" /></div></div><button type="submit" class="btn btn-primary mt-2">Save</button></form></div></div>',
+    onMount: function(root){
+      $('#sf', root).onsubmit = function(e){
+        e.preventDefault();
+        var d = {};
+        new FormData(e.target).forEach(function(v, k){ d[k] = v; });
+        d.shortageThreshold = Number(d.shortageThreshold);
+        d.lateToAbsenceThreshold = Number(d.lateToAbsenceThreshold);
+        d.qrValiditySeconds = Number(d.qrValiditySeconds);
+        updateSettings(d);
+        toast('Saved', 'success');
+      };
+    }
+  });
+}
+
+function ReportsPage(ctx){
+  var s = ctx.session;
+  return AppShell({
+    session: s, activePath: '#/app/reports', title: 'Reports',
+    childrenHtml: '<div class="stat-grid">' + statCard('Students', state.students.length) + statCard('Teachers', state.teachers.length) + statCard('Courses', state.courses.length) + statCard('Attendance', state.attendanceRecords.length) + '</div><div class="card"><div class="card-header"><h3>Generate Reports</h3></div><div class="card-body"><div class="row wrap"><button class="btn btn-primary" id="rs">Students CSV</button><button class="btn btn-ghost" id="rt">Teachers CSV</button><button class="btn btn-ghost" id="ra">Attendance CSV</button></div></div></div>',
+    onMount: function(root){
+      $('#rs', root).onclick = function(){ exportCsv('students.csv', ['Adm#', 'Reg#', 'Name', 'Father', 'Mobile', 'Status'], state.students.map(function(x){ return [x.admissionNumber, x.registrationNumber, x.name, x.fatherName, x.studentMobile, x.status]; })); };
+      $('#rt', root).onclick = function(){ exportCsv('teachers.csv', ['Name', 'Email'], state.teachers.map(function(x){ return [x.name, x.email || '']; })); };
+      $('#ra', root).onclick = function(){ exportCsv('attendance.csv', ['Date', 'Status'], state.attendanceRecords.map(function(r){ return [r.date, r.status]; })); };
+    }
+  });
+}
+
+function AcademicsPage(ctx){
+  var s = ctx.session;
+  var students = s.role === 'teacher' ? searchStudentsScoped(s, {}) : state.students.filter(function(x){ return x.status === 'Active'; });
+  return AppShell({
+    session: s, activePath: '#/app/academics', title: 'Subject %',
+    childrenHtml: '<div class="card"><div class="card-header"><h3>Subject-wise Attendance</h3></div><div class="card-body"><div class="table-wrap"><table class="data"><thead><tr><th>Student</th><th>Subject</th><th>P</th><th>L</th><th>A</th><th>%</th></tr></thead><tbody>' + (function(){
+      var rows = [];
+      students.forEach(function(stu){
+        state.courses.filter(function(c){ return c.semesterId === stu.currentSemesterId; }).forEach(function(c){
+          var sum = attendanceSummary(stu.id, c.id);
+          if(sum.total === 0) return;
+          rows.push('<tr><td>' + esc(stu.name) + '</td><td><strong>' + esc(c.code) + '</strong></td><td>' + sum.present + '</td><td>' + sum.late + '</td><td>' + sum.absent + '</td><td><strong>' + sum.adjustedPercentage.toFixed(1) + '%</strong></td></tr>');
+        });
+      });
+      return rows.join('') || '<tr><td colspan="6" class="empty">No data.</td></tr>';
+    })() + '</tbody></table></div></div></div>'
+  });
+}
+
+function TeachersPage(ctx){
+  var s = ctx.session;
+  return AppShell({
+    session: s, activePath: '#/app/teachers', title: 'Teachers',
+    childrenHtml: '<div class="card"><div class="card-header"><h3>Faculty (' + state.teachers.length + ')</h3></div><div class="card-body"><div class="table-wrap"><table class="data"><thead><tr><th>Name</th><th>Email</th><th>Designation</th><th>Mobile</th></tr></thead><tbody>' + (state.teachers.map(function(t){ return '<tr><td><strong>' + esc(t.name) + '</strong></td><td>' + esc(t.email || '') + '</td><td>' + esc(t.designation || '') + '</td><td>' + esc(t.mobile || '') + '</td></tr>'; }).join('') || '<tr><td colspan="4" class="empty">No teachers.</td></tr>') + '</tbody></table></div></div></div>'
+  });
+}
+
+function AttendanceListPage(ctx){
+  var s = ctx.session;
+  var recs = state.attendanceRecords.slice().sort(function(a, b){ return (b.date || '').localeCompare(a.date || ''); }).slice(0, 200);
+  return AppShell({
+    session: s, activePath: '#/app/attendance', title: 'Attendance',
+    childrenHtml: '<div class="stat-grid">' + statCard('Records', state.attendanceRecords.length) + statCard('Today', state.attendanceRecords.filter(function(r){ return r.date === todayIso(); }).length) + '</div><div class="card"><div class="card-header"><h3>Recent</h3></div><div class="card-body"><div class="table-wrap"><table class="data"><thead><tr><th>Date</th><th>Student</th><th>Status</th></tr></thead><tbody>' + (recs.map(function(r){ var stu = state.students.find(function(x){ return x.id === r.studentId; }); var badge = r.status === 'present' ? 'badge-success' : r.status === 'late' ? 'badge-warn' : 'badge-danger'; return '<tr><td>' + fmtDate(r.date) + '</td><td>' + esc(stu ? stu.name : '') + '</td><td><span class="badge ' + badge + '">' + esc(r.status) + '</span></td></tr>'; }).join('') || '<tr><td colspan="3" class="empty">No records.</td></tr>') + '</tbody></table></div></div></div>'
+  });
+}
+
+function RegistrationsAdminPage(ctx){
+  var s = ctx.session;
+  if(s.role !== 'chairman') return AppShell({ session: s, activePath: '#/app/registrations-admin', title: 'Registrations', childrenHtml: '<div class="empty-state"><h4>Only Chairman</h4></div>' });
+  var pending = (state.accounts || []).filter(function(a){ return a.status === 'Pending'; });
+  return AppShell({
+    session: s, activePath: '#/app/registrations-admin', title: 'Registrations',
+    childrenHtml: '<div class="card"><div class="card-header"><h3>Pending (' + pending.length + ')</h3></div><div class="card-body"><div class="table-wrap"><table class="data"><thead><tr><th>Name</th><th>Email</th><th>Role</th><th></th></tr></thead><tbody>' + (pending.map(function(a){ return '<tr><td>' + esc(a.displayName) + '</td><td>' + esc(a.email) + '</td><td><span class="badge badge-info">' + esc(a.role) + '</span></td><td class="text-right"><button class="btn btn-success btn-sm" data-ap="' + a.id + '">Approve</button> <button class="btn btn-danger btn-sm" data-rj="' + a.id + '">Reject</button></td></tr>'; }).join('') || '<tr><td colspan="4" class="empty">No pending.</td></tr>') + '</tbody></table></div></div></div>',
+    onMount: function(root){
+      $$('[data-ap]', root).forEach(function(b){ b.onclick = function(){ try { approveAccount(s, b.dataset.ap); toast('Approved', 'success'); renderRoute(); } catch(e){ toast(e.message, 'error'); } }; });
+      $$('[data-rj]', root).forEach(function(b){ b.onclick = function(){ try { rejectAccount(s, b.dataset.rj, 'Rejected'); toast('Rejected', 'success'); renderRoute(); } catch(e){ toast(e.message, 'error'); } }; });
+    }
+  });
+}
+
+function WarningsPage(ctx){
+  var s = ctx.session;
+  return AppShell({
+    session: s, activePath: '#/app/warnings', title: 'Warnings',
+    childrenHtml: '<div class="card"><div class="card-header"><h3>Issue Warning</h3></div><div class="card-body"><form id="wf"><div class="form-grid"><div class="field"><label>Student</label><select name="studentId">' + state.students.map(function(x){ return '<option value="' + x.id + '">' + esc(x.name) + '</option>'; }).join('') + '</select></div><div class="field"><label>Severity</label><select name="severity"><option>Warning</option><option>Final Warning</option><option>Suspension</option></select></div><div class="field full"><label>Reason</label><input name="reason" /></div><div class="field full"><label>Message</label><textarea name="message" rows="3"></textarea></div></div><button type="submit" class="btn btn-danger mt-2">Issue</button></form></div></div>' +
+      '<div class="card"><div class="card-header"><h3>Issued (' + state.warnings.length + ')</h3></div><div class="card-body"><div class="table-wrap"><table class="data"><thead><tr><th>Student</th><th>Severity</th><th>Reason</th></tr></thead><tbody>' + (state.warnings.map(function(w){ var stu = state.students.find(function(x){ return x.id === w.studentId; }); return '<tr><td>' + esc(stu ? stu.name : '') + '</td><td><span class="badge badge-danger">' + esc(w.severity) + '</span></td><td>' + esc(w.reason) + '</td></tr>'; }).join('') || '<tr><td colspan="3" class="empty">No warnings.</td></tr>') + '</tbody></table></div></div></div>',
+    onMount: function(root){
+      $('#wf', root).onsubmit = function(e){ e.preventDefault(); var d = {}; new FormData(e.target).forEach(function(v, k){ d[k] = v; }); try { issueWarning(s, d); toast('Issued', 'success'); renderRoute(); } catch(err){ toast(err.message, 'error'); } };
+    }
+  });
+}
+
+function MyWarningsPage(ctx){
+  var s = ctx.session;
+  var mine = state.warnings.filter(function(w){ return w.studentId === s.linkedId; });
+  return AppShell({ session: s, activePath: '#/app/my-warnings', title: 'My Warnings', childrenHtml: '<div class="card"><div class="card-header"><h3>Warnings (' + mine.length + ')</h3></div><div class="card-body">' + (mine.map(function(w){ return '<div class="card" style="border-left:4px solid #dc2626;padding:12px;margin-bottom:8px"><strong>' + esc(w.severity) + '</strong> - <span class="muted">' + fmtDT(w.issuedAt) + '</span><div>' + esc(w.reason) + '</div><div class="muted">' + esc(w.message) + '</div></div>'; }).join('') || '<div class="empty-state"><h4>No warnings</h4></div>') + '</div></div>' });
+}
+
+function ChildWarningsPage(ctx){
+  var s = ctx.session;
+  var link = state.parentLinks.find(function(l){ return l.parentId === s.linkedId && l.verified; });
+  var stu = link ? state.students.find(function(x){ return x.id === link.studentId; }) : null;
+  var mine = stu ? state.warnings.filter(function(w){ return w.studentId === stu.id; }) : [];
+  return AppShell({ session: s, activePath: '#/app/child-warnings', title: 'Child Warnings', childrenHtml: '<div class="card"><div class="card-header"><h3>Warnings (' + mine.length + ')</h3></div><div class="card-body">' + (mine.map(function(w){ return '<div class="card" style="border-left:4px solid #dc2626;padding:12px;margin-bottom:8px"><strong>' + esc(w.severity) + '</strong><div class="muted">' + esc(w.message) + '</div></div>'; }).join('') || '<div class="empty-state"><h4>No warnings</h4></div>') + '</div></div>' });
+}
+
+function SharedFilesPage(ctx){
+  var s = ctx.session;
+  var isChair = s.role === 'chairman';
+  var files = sharedFilesFor(s);
+  return AppShell({
+    session: s, activePath: '#/app/shared-files', title: 'Shared Files',
+    childrenHtml: (isChair ? '<div class="card"><div class="card-header"><h3>Share</h3></div><div class="card-body"><form id="sf"><div class="form-grid"><div class="field full"><label>Title</label><input name="title" /></div><div class="field full"><label>Description</label><textarea name="description" rows="2"></textarea></div><div class="field full"><label>File</label><input type="file" name="file" /></div><div class="field full"><label>Share with</label><div class="row"><label><input type="checkbox" name="role_coordinator" value="coordinator" /> Coordinator</label><label><input type="checkbox" name="role_clerk" value="clerk" /> Clerk</label></div></div></div><button type="submit" class="btn btn-primary mt-2">Share</button></form></div></div>' : '') +
+      '<div class="card"><div class="card-header"><h3>Files (' + files.length + ')</h3></div><div class="card-body"><div class="table-wrap"><table class="data"><thead><tr><th>Title</th><th>By</th></tr></thead><tbody>' + (files.map(function(f){ return '<tr><td><strong>' + esc(f.title) + '</strong></td><td>' + esc(f.sharedByName || '') + '</td></tr>'; }).join('') || '<tr><td colspan="2" class="empty">No files.</td></tr>') + '</tbody></table></div></div></div>',
+    onMount: function(root){
+      var form = $('#sf', root);
+      if(form) form.onsubmit = function(e){
+        e.preventDefault();
+        var d = {};
+        new FormData(e.target).forEach(function(v, k){ if(k !== 'file' && k.indexOf('role_') !== 0) d[k] = v; });
+        d.sharedWithRoles = [];
+        if(root.querySelector('input[name=role_coordinator]').checked) d.sharedWithRoles.push('coordinator');
+        if(root.querySelector('input[name=role_clerk]').checked) d.sharedWithRoles.push('clerk');
+        var file = $('input[type=file]', root).files[0];
+        if(!file){ toast('Choose file', 'error'); return; }
+        var reader = new FileReader();
+        reader.onload = function(){ d.dataUrl = reader.result; d.fileName = file.name; try { shareFile(s, d); toast('Shared', 'success'); renderRoute(); } catch(err){ toast(err.message, 'error'); } };
+        reader.readAsDataURL(file);
+      };
+    }
+  });
+}
+
+function AuditPage(ctx){
+  var s = ctx.session;
+  if(s.role !== 'chairman') return AppShell({ session: s, activePath: '#/app/audit', title: 'Audit', childrenHtml: '<div class="empty-state"><h4>Only Chairman</h4></div>' });
+  var logs = state.auditLogs.slice().reverse().slice(0, 200);
+  return AppShell({
+    session: s, activePath: '#/app/audit', title: 'Audit Log',
+    childrenHtml: '<div class="card"><div class="card-header"><h3>Audit (' + state.auditLogs.length + ')</h3></div><div class="card-body"><div class="table-wrap"><table class="data"><thead><tr><th>Time</th><th>User</th><th>Action</th><th>Module</th></tr></thead><tbody>' + (logs.map(function(l){ return '<tr><td>' + fmtDT(l.timestamp) + '</td><td>' + esc(l.userId) + '</td><td>' + esc(l.action) + '</td><td>' + esc(l.module) + '</td></tr>'; }).join('') || '<tr><td colspan="4" class="empty">No logs.</td></tr>') + '</tbody></table></div></div></div>'
+  });
+}
+
+function ImportPage(ctx){
+  var s = ctx.session;
+  return AppShell({
+    session: s, activePath: '#/app/import', title: 'Import Students',
+    childrenHtml: '<div class="card"><div class="card-header"><h3>Upload CSV</h3></div><div class="card-body"><p class="muted">Columns: admissionNumber, registrationNumber, classNumber, name, fatherName, studentMobile, currentSemesterId, currentSectionId</p><input type="file" id="csvIn" accept=".csv" /></div></div>',
+    onMount: function(root){
+      $('#csvIn', root).onchange = function(e){
+        var f = e.target.files[0];
+        if(!f) return;
+        var rd = new FileReader();
+        rd.onload = function(){
+          var lines = String(rd.result).split('\n').filter(function(l){ return l.trim(); });
+          if(lines.length < 2){ toast('Empty', 'error'); return; }
+          var headers = lines[0].split(',').map(function(h){ return h.trim().replace(/^\uFEFF/, '').replace(/^"|"$/g, ''); });
+          var count = 0;
+          for(var i = 1; i < lines.length; i++){
+            var cells = lines[i].split(',').map(function(c){ return c.trim().replace(/^"|"$/g, ''); });
+            var row = {};
+            headers.forEach(function(h, idx){ row[h] = cells[idx] || ''; });
+            try {
+              if(Object.keys(validateStudent(row)).length === 0){
+                createStudent(s, row);
+                count++;
+              }
+            } catch(e){}
+          }
+          toast('Imported ' + count, 'success');
+          renderRoute();
+        };
+        rd.readAsText(f);
+      };
+    }
+  });
+}
+
+function PromotionsPage(ctx){
+  var s = ctx.session;
+  return AppShell({
+    session: s, activePath: '#/app/promotions', title: 'Promotions',
+    childrenHtml: '<div class="card"><div class="card-header"><h3>Promote Students</h3></div><div class="card-body"><div class="table-wrap"><table class="data"><thead><tr><th>Student</th><th>Current</th><th>Promote</th><th></th></tr></thead><tbody>' + (state.students.filter(function(x){ return x.status === 'Active'; }).map(function(stu){
+      var sem = state.semesters.find(function(x){ return x.id === stu.currentSemesterId; });
+      return '<tr data-sid="' + stu.id + '"><td><strong>' + esc(stu.name) + '</strong></td><td>' + esc(sem ? sem.name : '') + '</td><td><select data-tgt-sem><option value="">Select</option>' + state.semesters.map(function(x){ return '<option value="' + x.id + '">' + esc(x.name) + '</option>'; }).join('') + '</select> <select data-tgt-sec><option value="">Sec</option>' + state.sections.map(function(x){ return '<option value="' + x.id + '">' + esc(x.name) + '</option>'; }).join('') + '</select></td><td><button class="btn btn-primary btn-sm" data-promote="' + stu.id + '">Promote</button></td></tr>';
+    }).join('') || '<tr><td colspan="4" class="empty">No students.</td></tr>') + '</tbody></table></div></div></div>',
+    onMount: function(root){
+      $$('[data-promote]', root).forEach(function(b){
+        b.onclick = function(){
+          var tr = b.closest('tr');
+          var ts = $('[data-tgt-sem]', tr).value;
+          var tc = $('[data-tgt-sec]', tr).value;
+          if(!ts || !tc){ toast('Select both', 'error'); return; }
+          updateColl('students', function(a){ return a.map(function(x){ return x.id === b.dataset.promote ? Object.assign({}, x, { currentSemesterId: ts, currentSectionId: tc }) : x; }); });
+          toast('Promoted', 'success');
+          renderRoute();
+        };
+      });
+    }
+  });
+}
+
+function ExitRecordsPage(ctx){
+  var s = ctx.session;
+  return AppShell({ session: s, activePath: '#/app/exit-records', title: 'Exit Records', childrenHtml: '<div class="card"><div class="card-header"><h3>Exit Records (' + state.exitRecords.length + ')</h3></div><div class="card-body"><div class="table-wrap"><table class="data"><thead><tr><th>Date</th><th>Student</th></tr></thead><tbody>' + (state.exitRecords.map(function(r){ var st = state.students.find(function(x){ return x.id === r.studentId; }); return '<tr><td>' + fmtDate(r.date) + '</td><td>' + esc(st ? st.name : '') + '</td></tr>'; }).join('') || '<tr><td colspan="2" class="empty">No records.</td></tr>') + '</tbody></table></div></div></div>' });
+}
+
+function MyClassesPage(ctx){
+  var s = ctx.session;
+  var assigns = state.courseAssignments.filter(function(a){ return a.teacherId === s.linkedId; });
+  return AppShell({ session: s, activePath: '#/app/my-classes', title: 'My Classes', childrenHtml: '<div class="card"><div class="card-header"><h3>Classes (' + assigns.length + ')</h3></div><div class="card-body"><div class="table-wrap"><table class="data"><thead><tr><th>Course</th><th>Semester</th><th>Section</th></tr></thead><tbody>' + (assigns.map(function(a){ var c = state.courses.find(function(x){ return x.id === a.courseId; }); var sem = state.semesters.find(function(x){ return x.id === a.semesterId; }); var sec = state.sections.find(function(x){ return x.id === a.sectionId; }); return '<tr><td><strong>' + esc(c ? c.code : '') + '</strong> ' + esc(c ? c.name : '') + '</td><td>' + esc(sem ? sem.name : '') + '</td><td>' + esc(sec ? sec.name : '') + '</td></tr>'; }).join('') || '<tr><td colspan="3" class="empty">No classes.</td></tr>') + '</tbody></table></div></div></div>' });
+}
+
+function MyTimetablePage(ctx){
+  var s = ctx.session;
+  var stu = s.role === 'student' ? state.students.find(function(x){ return x.id === s.linkedId; }) : null;
+  var slots = state.timetable.filter(function(t){
+    if(s.role === 'teacher') return t.teacherId === s.linkedId;
+    if(stu) return t.semesterId === stu.currentSemesterId && t.sectionId === stu.currentSectionId;
+    return false;
+  }).sort(function(a, b){ return DAYS.indexOf(a.day) - DAYS.indexOf(b.day) || t2m(a.startTime) - t2m(b.startTime); });
+  return AppShell({ session: s, activePath: '#/app/my-timetable', title: 'My Timetable', childrenHtml: '<div class="card"><div class="card-header"><h3>Schedule (' + slots.length + ')</h3></div><div class="card-body"><div class="table-wrap"><table class="data"><thead><tr><th>Day</th><th>Time</th><th>Course</th></tr></thead><tbody>' + (slots.map(function(t){ var c = state.courses.find(function(x){ return x.id === t.courseId; }); return '<tr><td><strong>' + esc(t.day) + '</strong></td><td>' + esc(t.startTime) + '-' + esc(t.endTime) + '</td><td>' + esc(c ? c.code + ' ' + c.name : '') + '</td></tr>'; }).join('') || '<tr><td colspan="3" class="empty">No slots.</td></tr>') + '</tbody></table></div></div></div>' });
+}
+
+function ParentChildPage(ctx){
+  var session = ctx.session, mode = ctx.mode;
+  var student = null;
+  if(session.role === 'parent'){
+    var l = state.parentLinks.find(function(x){ return x.parentId === session.linkedId && x.verified; });
+    if(l) student = state.students.find(function(s){ return s.id === l.studentId; });
+  } else {
+    student = state.students.find(function(s){ return s.id === session.linkedId; });
+  }
+  if(!student) return AppShell({ session: session, activePath: '#/app/profile', title: 'Not Linked', childrenHtml: '<div class="empty-state"><h4>No student linked</h4></div>' });
+  var sum = attendanceSummary(student.id);
+  var body = '';
+  if(mode === 'profile'){
+    body = '<div class="card"><div class="card-body"><h3>' + esc(student.name) + '</h3><div class="muted">' + esc(student.fatherName) + '</div><div class="muted">Reg: ' + esc(student.registrationNumber) + '</div></div></div>';
+  } else if(mode === 'attendance' || mode === 'academics'){
+    body = '<div class="stat-grid">' + statCard('Total', sum.total) + statCard('Present', sum.present, '', 'success') + statCard('Late', sum.late, '', 'warn') + statCard('Absent', sum.absent, '', 'danger') + statCard('%', sum.adjustedPercentage.toFixed(1) + '%') + '</div>';
+  } else if(mode === 'leave'){
+    var leaves = state.leaveApplications.filter(function(l){ return l.studentId === student.id; });
+    body = '<div class="table-wrap"><table class="data"><thead><tr><th>Type</th><th>Status</th></tr></thead><tbody>' + (leaves.map(function(l){ return '<tr><td>' + esc(l.leaveType) + '</td><td>' + esc(l.status) + '</td></tr>'; }).join('') || '<tr><td colspan="2" class="empty">No leaves.</td></tr>') + '</tbody></table></div>';
+  } else if(mode === 'timetable'){
+    var slots = state.timetable.filter(function(t){ return t.semesterId === student.currentSemesterId && t.sectionId === student.currentSectionId; });
+    body = '<div class="table-wrap"><table class="data"><thead><tr><th>Day</th><th>Time</th><th>Course</th></tr></thead><tbody>' + (slots.map(function(s){ var c = state.courses.find(function(x){ return x.id === s.courseId; }); return '<tr><td><strong>' + esc(s.day) + '</strong></td><td>' + esc(s.startTime) + '-' + esc(s.endTime) + '</td><td>' + esc(c ? c.code + ' ' + c.name : '') + '</td></tr>'; }).join('') || '<tr><td colspan="3" class="empty">No classes.</td></tr>') + '</tbody></table></div>';
+  }
+  return AppShell({ session: session, activePath: '#/app/profile', title: student.name, childrenHtml: body });
+}
+
+function MeetingsPage(ctx){
+  var s = ctx.session;
+  var canManage = can(s.role, 'meetings.manage');
+  return AppShell({ session: s, activePath: '#/app/meetings', title: 'Meetings', childrenHtml: '<div class="card"><div class="card-header"><h3>All (' + state.committeeMeetings.length + ')</h3>' + (canManage ? '<button class="btn btn-primary btn-sm" id="nm" style="margin-left:auto">+ New</button>' : '') + '</div><div class="card-body"><div class="table-wrap"><table class="data"><thead><tr><th>Subject</th><th>Date</th><th>Status</th><th></th></tr></thead><tbody>' + (state.committeeMeetings.map(function(m){ var act = s.role === 'chairman' && m.status !== 'Approved' ? '<button class="btn btn-success btn-sm" data-ap="' + m.id + '">Approve</button>' : ''; return '<tr><td>' + esc(m.subject) + '</td><td>' + fmtDate(m.date) + '</td><td>' + esc(m.status) + '</td><td class="text-right">' + act + '</td></tr>'; }).join('') || '<tr><td colspan="4" class="empty">No meetings.</td></tr>') + '</tbody></table></div></div></div>', onMount: function(root){
+    var b = $('#nm', root);
+    if(b) b.onclick = function(){ openModal({ title: 'New Meeting', bodyHtml: '<form id="mmf"><div class="form-grid"><div class="field full"><label>Subject</label><input name="subject" /></div><div class="field"><label>Date</label><input name="date" type="date" value="' + todayIso() + '" /></div></div></form>', footerHtml: '<button class="btn btn-ghost" data-cancel>Cancel</button><button class="btn btn-primary" data-save>Create</button>', onMount: function(r, close){ r.querySelector('[data-cancel]').onclick = close; r.querySelector('[data-save]').onclick = function(){ var d = {}; new FormData($('#mmf', r)).forEach(function(v, k){ d[k] = v; }); try { addMeeting(s, d); toast('Created', 'success'); close(); renderRoute(); } catch(e){ toast(e.message, 'error'); } }; } }); };
+    $$('[data-ap]', root).forEach(function(b){ b.onclick = function(){ try { approveMeeting(s, b.dataset.ap); toast('Approved', 'success'); renderRoute(); } catch(e){ toast(e.message, 'error'); } }; });
+  } });
+}
+
+function ParentMeetingsPage(ctx){
+  var s = ctx.session;
+  var canCreate = (s.role === 'coordinator' || s.role === 'chairman');
+  return AppShell({ session: s, activePath: '#/app/parent-meetings', title: 'PTMs', childrenHtml: '<div class="card"><div class="card-header"><h3>All PTMs (' + state.parentTeacherMeetings.length + ')</h3>' + (canCreate ? '<button class="btn btn-primary btn-sm" id="np" style="margin-left:auto">+ Schedule</button>' : '') + '</div><div class="card-body"><div class="table-wrap"><table class="data"><thead><tr><th>Title</th><th>Date</th><th>Status</th><th></th></tr></thead><tbody>' + (state.parentTeacherMeetings.map(function(m){ var act = s.role === 'chairman' && m.status !== 'Approved' ? '<button class="btn btn-success btn-sm" data-ap="' + m.id + '">Approve</button>' : ''; return '<tr><td><strong>' + esc(m.title) + '</strong></td><td>' + fmtDate(m.date) + '</td><td>' + esc(m.status) + '</td><td class="text-right">' + act + '</td></tr>'; }).join('') || '<tr><td colspan="4" class="empty">No PTMs.</td></tr>') + '</tbody></table></div></div></div>', onMount: function(root){
+    var b = $('#np', root);
+    if(b) b.onclick = function(){ openModal({ title: 'Schedule PTM', bodyHtml: '<form id="pf"><div class="form-grid"><div class="field full"><label>Title</label><input name="title" /></div><div class="field"><label>Date</label><input name="date" type="date" value="' + todayIso() + '" /></div></div></form>', footerHtml: '<button class="btn btn-ghost" data-cancel>Cancel</button><button class="btn btn-primary" data-save>Schedule</button>', onMount: function(r, close){ r.querySelector('[data-cancel]').onclick = close; r.querySelector('[data-save]').onclick = function(){ var d = {}; new FormData($('#pf', r)).forEach(function(v, k){ d[k] = v; }); try { createParentMeeting(s, d); toast('Scheduled', 'success'); close(); renderRoute(); } catch(e){ toast(e.message, 'error'); } }; } }); };
+    $$('[data-ap]', root).forEach(function(b){ b.onclick = function(){ try { approveParentMeeting(s, b.dataset.ap); toast('Approved', 'success'); renderRoute(); } catch(e){ toast(e.message, 'error'); } }; });
+  } });
+}
+
+function CommitteesPage(ctx){
+  var s = ctx.session;
+  var canManage = can(s.role, 'committees.manage');
+  return AppShell({ session: s, activePath: '#/app/committees', title: 'Committees', childrenHtml: '<div class="card"><div class="card-header"><h3>All (' + state.committees.length + ')</h3>' + (canManage ? '<button class="btn btn-primary btn-sm" id="nc" style="margin-left:auto">+ New</button>' : '') + '</div><div class="card-body"><div class="table-wrap"><table class="data"><thead><tr><th>#</th><th>Name</th><th>Kind</th><th>Status</th></tr></thead><tbody>' + (state.committees.map(function(c){ var kindBadge = c.committeeKind === 'OBE' ? '<span class="badge badge-gold">OBE</span>' : c.committeeKind === 'AT' ? '<span class="badge badge-info">AT</span>' : c.committeeKind === 'PT' ? '<span class="badge badge-success">PT</span>' : '<span class="badge badge-gray">Standalone</span>'; return '<tr><td><strong>' + (c.committeeNumber || '-') + '</strong></td><td>' + esc(c.name) + '</td><td>' + kindBadge + '</td><td>' + esc(c.status) + '</td></tr>'; }).join('') || '<tr><td colspan="4" class="empty">No committees.</td></tr>') + '</tbody></table></div></div></div>', onMount: function(root){
+    var b = $('#nc', root);
+    if(b) b.onclick = function(){ openModal({ title: 'New Committee', bodyHtml: '<form id="cf"><div class="form-grid"><div class="field full"><label>Name</label><input name="name" /></div><div class="field"><label>Formation Date</label><input name="formationDate" type="date" value="' + todayIso() + '" /></div><div class="field"><label>Kind</label><select name="committeeKind">' + COMMITTEE_KINDS.map(function(k){ return '<option value="' + k + '">' + k + '</option>'; }).join('') + '</select></div></div></form>', footerHtml: '<button class="btn btn-ghost" data-cancel>Cancel</button><button class="btn btn-primary" data-save>Create</button>', onMount: function(r, close){ r.querySelector('[data-cancel]').onclick = close; r.querySelector('[data-save]').onclick = function(){ var d = {}; new FormData($('#cf', r)).forEach(function(v, k){ d[k] = v; }); try { createCommittee(s, d); toast('Created', 'success'); close(); renderRoute(); } catch(e){ toast(e.message, 'error'); } }; } }); };
+  } });
+}
+
+function AssignmentsPage(ctx){
+  var s = ctx.session;
+  var canCreate = (s.role === 'teacher' || s.role === 'chairman');
+  var list = state.assignments.slice().reverse();
+  if(s.role === 'teacher') list = list.filter(function(a){ return a.teacherId === s.linkedId; });
+  return AppShell({ session: s, activePath: '#/app/assignments', title: 'Assignments', childrenHtml: '<div class="card"><div class="card-header"><h3>All (' + list.length + ')</h3>' + (canCreate ? '<button class="btn btn-primary btn-sm" id="na" style="margin-left:auto">+ New</button>' : '') + '</div><div class="card-body">' + (list.map(function(a){ var c = state.courses.find(function(x){ return x.id === a.courseId; }); var subs = state.assignmentSubmissions.filter(function(x){ return x.assignmentId === a.id; }); return '<div class="card" style="padding:12px;margin-bottom:8px"><strong>' + esc(a.title) + '</strong><div class="muted">' + esc(c ? c.code : '') + ' - Due ' + fmtDate(a.dueDate) + '</div><div class="row" style="margin-top:8px"><span class="badge badge-info">' + subs.length + ' subs</span><button class="btn btn-primary btn-sm" data-view="' + a.id + '">View</button></div></div>'; }).join('') || '<div class="empty-state"><h4>No assignments</h4></div>') + '</div></div>', onMount: function(root){
+    var b = $('#na', root);
+    if(b) b.onclick = function(){ openModal({ title: 'New Assignment', bodyHtml: '<form id="af"><div class="form-grid"><div class="field full"><label>Title</label><input name="title" /></div><div class="field"><label>Course</label><select name="courseId">' + state.courses.map(function(c){ return '<option value="' + c.id + '">' + esc(c.code + ' ' + c.name) + '</option>'; }).join('') + '</select></div><div class="field"><label>Due Date</label><input name="dueDate" type="date" value="' + todayIso() + '" /></div><div class="field full"><label>Description</label><textarea name="description" rows="3"></textarea></div></div></form>', footerHtml: '<button class="btn btn-ghost" data-cancel>Cancel</button><button class="btn btn-primary" data-save>Create</button>', onMount: function(r, close){ r.querySelector('[data-cancel]').onclick = close; r.querySelector('[data-save]').onclick = function(){ var d = {}; new FormData($('#af', r)).forEach(function(v, k){ d[k] = v; }); try { createAssignment(s, d); toast('Created', 'success'); close(); renderRoute(); } catch(e){ toast(e.message, 'error'); } }; } }); };
+    $$('[data-view]', root).forEach(function(b){ b.onclick = function(){ openAssignmentView({ session: s, assignmentId: b.dataset.view }); }; });
+  } });
+}
+
+function openAssignmentView(o){
+  var session = o.session, assignmentId = o.assignmentId;
+  var a = state.assignments.find(function(x){ return x.id === assignmentId; });
+  if(!a) return;
+  var subs = state.assignmentSubmissions.filter(function(x){ return x.assignmentId === assignmentId; });
+  var bodyHtml = '<div style="margin-bottom:12px"><strong>' + esc(a.title) + '</strong><div class="muted">Due: ' + fmtDate(a.dueDate) + '</div></div>';
+  if(session.role === 'student'){
+    var mine = subs.find(function(x){ return x.studentId === session.linkedId; });
+    if(mine) bodyHtml += '<div class="card"><div class="card-body">Submitted: ' + esc(mine.status) + '</div></div>';
+    else bodyHtml += '<form id="subf"><div class="field"><label>Notes</label><textarea name="notes" rows="3"></textarea></div><button type="submit" class="btn btn-primary mt-2">Submit</button></form>';
+  } else {
+    bodyHtml += '<div class="table-wrap"><table class="data"><thead><tr><th>Student</th><th>Status</th></tr></thead><tbody>' + (subs.map(function(x){ return '<tr><td>' + esc(x.studentName) + '</td><td>' + esc(x.status) + '</td></tr>'; }).join('') || '<tr><td colspan="2" class="empty">No submissions</td></tr>') + '</tbody></table></div>';
+  }
+  openModal({ title: 'Assignment', size: 'lg', bodyHtml: bodyHtml, footerHtml: '<button class="btn btn-ghost" data-cancel>Close</button>', onMount: function(root, close){
+    root.querySelector('[data-cancel]').onclick = close;
+    var sf = $('#subf', root);
+    if(sf) sf.onsubmit = function(e){ e.preventDefault(); var d = { assignmentId: assignmentId }; new FormData(e.target).forEach(function(v, k){ d[k] = v; }); try { submitAssignment(session, d); toast('Submitted', 'success'); close(); renderRoute(); } catch(err){ toast(err.message, 'error'); } };
+  } });
+}
+
+function MyAssignmentsPage(ctx){
+  var s = ctx.session;
+  var stu = state.students.find(function(x){ return x.id === s.linkedId; });
+  if(!stu) return AppShell({ session: s, activePath: '#/app/my-assignments', title: 'My Assignments', childrenHtml: '<div class="empty-state"><h4>Not linked</h4></div>' });
+  var relevant = state.assignments.filter(function(a){ return (!a.semesterId || a.semesterId === stu.currentSemesterId) && (!a.sectionId || a.sectionId === stu.currentSectionId); }).reverse();
+  return AppShell({ session: s, activePath: '#/app/my-assignments', title: 'My Assignments', childrenHtml: '<div class="card"><div class="card-header"><h3>Assignments (' + relevant.length + ')</h3></div><div class="card-body">' + (relevant.map(function(a){ var c = state.courses.find(function(x){ return x.id === a.courseId; }); var sub = state.assignmentSubmissions.find(function(x){ return x.assignmentId === a.id && x.studentId === s.linkedId; }); return '<div class="card" style="padding:12px;margin-bottom:8px"><strong>' + esc(a.title) + '</strong><div class="muted">' + esc(c ? c.code : '') + ' - Due ' + fmtDate(a.dueDate) + '</div><div class="row" style="margin-top:8px">' + (sub ? '<span class="badge badge-success">' + esc(sub.status) + '</span>' : '<span class="badge badge-warn">Pending</span>') + '<button class="btn btn-primary btn-sm" data-view="' + a.id + '">' + (sub ? 'View' : 'Submit') + '</button></div></div>'; }).join('') || '<div class="empty-state"><h4>No assignments</h4></div>') + '</div></div>', onMount: function(root){ $$('[data-view]', root).forEach(function(b){ b.onclick = function(){ openAssignmentView({ session: s, assignmentId: b.dataset.view }); }; }); } });
+}
+
+function TopicsPage(ctx){
+  var s = ctx.session;
+  var canUpload = ['chairman', 'teacher'].indexOf(s.role) >= 0;
+  return AppShell({ session: s, activePath: '#/app/topics', title: 'Topics', childrenHtml: '<div class="card"><div class="card-header"><h3>Topics (' + state.topics.length + ')</h3>' + (canUpload ? '<button class="btn btn-primary btn-sm" id="upBtn" style="margin-left:auto">+ Upload</button>' : '') + '</div><div class="card-body"><div class="table-wrap"><table class="data"><thead><tr><th>Course</th><th>Title</th><th>Type</th></tr></thead><tbody>' + (state.topics.map(function(t){ var c = state.courses.find(function(x){ return x.id === t.courseId; }); return '<tr><td>' + esc(c ? c.code : '') + '</td><td><strong>' + esc(t.title) + '</strong></td><td>' + esc(t.type || '') + '</td></tr>'; }).join('') || '<tr><td colspan="3" class="empty">No topics.</td></tr>') + '</tbody></table></div></div></div>', onMount: function(root){
+    var b = $('#upBtn', root);
+    if(!b) return;
+    b.onclick = function(){ openModal({ title: 'Upload Topic', bodyHtml: '<form id="tf"><div class="form-grid"><div class="field"><label>Course</label><select name="courseId">' + state.courses.map(function(c){ return '<option value="' + c.id + '">' + esc(c.code + ' - ' + c.name) + '</option>'; }).join('') + '</select></div><div class="field"><label>Title</label><input name="title" /></div><div class="field"><label>Type</label><select name="type"><option>Theory</option><option>Practical</option></select></div><div class="field"><label>Date</label><input name="classDate" type="date" value="' + todayIso() + '" /></div></div></form>', footerHtml: '<button class="btn btn-ghost" data-cancel>Cancel</button><button class="btn btn-primary" data-save>Upload</button>', onMount: function(r, close){ r.querySelector('[data-cancel]').onclick = close; r.querySelector('[data-save]').onclick = function(){ var d = {}; new FormData($('#tf', r)).forEach(function(v, k){ d[k] = v; }); try { createTopic(s, d); toast('Uploaded', 'success'); close(); renderRoute(); } catch(e){ toast(e.message, 'error'); } }; } }); };
+  } });
+}
+
+log('All pages loaded');
+
+var routes = [
+  { path: '#/login', page: function(){ return LoginPage(); } },
+  { path: '#/app/dashboard', page: DashboardPage },
+  { path: '#/app/live-classes', page: LiveClassesPage },
+  { path: '#/app/substitute-requests', page: SubstituteRequestsPage },
+  { path: '#/app/notifications', page: NotificationsPage },
+  { path: '#/app/students', page: StudentsPage },
+  { path: '#/app/teachers', page: TeachersPage },
+  { path: '#/app/registrations-admin', page: RegistrationsAdminPage },
+  { path: '#/app/courses', page: CoursesPage },
+  { path: '#/app/topics', page: TopicsPage },
+  { path: '#/app/timetable', page: TimetablePage },
+  { path: '#/app/attendance', page: AttendanceListPage },
+  { path: '#/app/attendance/mark', page: AttendanceMarkPage },
+  { path: '#/app/academics', page: AcademicsPage },
+  { path: '#/app/qr-control', page: function(ctx){
+    var s = ctx.session;
+    if(s.role !== 'chairman') return AppShell({ session: s, activePath: '#/app/qr-control', title: 'QR Control', childrenHtml: '<div class="empty-state"><h4>Only Chairman</h4></div>' });
+    var settings = getSettings();
+    var activeSessions = state.attendanceSessions.filter(function(a){ return a.status === 'open'; });
+    return AppShell({ session: s, activePath: '#/app/qr-control', title: 'QR Control', childrenHtml: '<div class="card"><div class="card-header"><h3>QR Kill-Switch</h3></div><div class="card-body"><div class="row between"><div><strong>Status:</strong> <span class="badge ' + (settings.qrAttendanceEnabled ? 'badge-success' : 'badge-danger') + '">' + (settings.qrAttendanceEnabled ? 'ENABLED' : 'DISABLED') + '</span></div><button class="btn ' + (settings.qrAttendanceEnabled ? 'btn-danger' : 'btn-success') + '" id="togBtn">' + (settings.qrAttendanceEnabled ? 'Disable' : 'Enable') + '</button></div></div></div><div class="card"><div class="card-header"><h3>Active Sessions (' + activeSessions.length + ')</h3></div><div class="card-body"><div class="table-wrap"><table class="data"><thead><tr><th>Date</th><th>Course</th><th>Teacher</th></tr></thead><tbody>' + (activeSessions.map(function(a){ var c = state.courses.find(function(x){ return x.id === a.courseId; }); var t = state.teachers.find(function(x){ return x.id === a.teacherId; }); return '<tr><td>' + fmtDate(a.date) + '</td><td>' + esc(c ? c.code : '') + '</td><td>' + esc(t ? t.name : '') + '</td></tr>'; }).join('') || '<tr><td colspan="3" class="empty">No active.</td></tr>') + '</tbody></table></div></div></div>', onMount: function(root){ $('#togBtn', root).onclick = function(){ var cur = getSettings().qrAttendanceEnabled; updateSettings({ qrAttendanceEnabled: !cur }); toast(cur ? 'Disabled' : 'Enabled', cur ? 'warn' : 'success'); renderRoute(); }; } });
+  }},
+  { path: '#/app/late-scan-requests', page: function(ctx){
+    var s = ctx.session;
+    if(s.role !== 'chairman' && s.role !== 'teacher') return AppShell({ session: s, activePath: '#/app/late-scan-requests', title: 'Late Scans', childrenHtml: '<div class="empty-state"><h4>Denied</h4></div>' });
+    return AppShell({ session: s, activePath: '#/app/late-scan-requests', title: 'Late Scan Requests', childrenHtml: '<div class="card"><div class="card-header"><h3>Requests (' + state.lateScanRequests.length + ')</h3></div><div class="card-body"><div class="table-wrap"><table class="data"><thead><tr><th>Date</th><th>Student</th><th>Reason</th><th>Status</th><th></th></tr></thead><tbody>' + (state.lateScanRequests.slice().reverse().map(function(r){ var act = r.status === 'pending' ? '<button class="btn btn-success btn-sm" data-ap="' + r.id + '">Approve</button> <button class="btn btn-danger btn-sm" data-rj="' + r.id + '">Reject</button>' : ''; return '<tr><td>' + fmtDate(r.date) + '</td><td>' + esc(r.studentName) + '</td><td>' + esc(r.reason || '') + '</td><td>' + esc(r.status) + '</td><td class="text-right">' + act + '</td></tr>'; }).join('') || '<tr><td colspan="5" class="empty">No requests.</td></tr>') + '</tbody></table></div></div></div>', onMount: function(root){
+      $$('[data-ap]', root).forEach(function(b){ b.onclick = function(){ try { decideLateScan(s, b.dataset.ap, 'approved', 'OK'); toast('Approved', 'success'); renderRoute(); } catch(e){ toast(e.message, 'error'); } }; });
+      $$('[data-rj]', root).forEach(function(b){ b.onclick = function(){ try { decideLateScan(s, b.dataset.rj, 'rejected', 'No'); toast('Rejected', 'success'); renderRoute(); } catch(e){ toast(e.message, 'error'); } }; });
+    } });
+  }},
+  { path: '#/app/qr/start', page: QrStartPage },
+  { path: '#/app/scan-qr', page: QrScanPage },
+  { path: '#/app/promotions', page: PromotionsPage },
+  { path: '#/app/leaves', page: LeavesPage },
+  { path: '#/app/my-leave', page: MyLeavePage },
+  { path: '#/app/teacher-leaves', page: TeacherLeavesPage },
+  { path: '#/app/meetings', page: MeetingsPage },
+  { path: '#/app/parent-meetings', page: ParentMeetingsPage },
+  { path: '#/app/committees', page: CommitteesPage },
+  { path: '#/app/assignments', page: AssignmentsPage },
+  { path: '#/app/my-assignments', page: MyAssignmentsPage },
+  { path: '#/app/shared-files', page: SharedFilesPage },
+  { path: '#/app/reports', page: ReportsPage },
+  { path: '#/app/warnings', page: WarningsPage },
+  { path: '#/app/my-warnings', page: MyWarningsPage },
+  { path: '#/app/child-warnings', page: ChildWarningsPage },
+  { path: '#/app/import', page: ImportPage },
+  { path: '#/app/audit', page: AuditPage },
+  { path: '#/app/settings', page: SettingsPage },
+  { path: '#/app/exit-records', page: ExitRecordsPage },
+  { path: '#/app/my-classes', page: MyClassesPage },
+  { path: '#/app/my-timetable', page: MyTimetablePage },
+  { path: '#/app/profile-self', page: MyProfilePage },
+  { path: '#/app/profile', page: function(ctx){ return ParentChildPage({ session: ctx.session, mode: 'profile' }); } },
+  { path: '#/app/my-attendance', page: function(ctx){ return ParentChildPage({ session: ctx.session, mode: 'attendance' }); } },
+  { path: '#/app/my-academics', page: function(ctx){ return ParentChildPage({ session: ctx.session, mode: 'academics' }); } },
+  { path: '#/app/child', page: function(ctx){ return ParentChildPage({ session: ctx.session, mode: 'profile' }); } },
+  { path: '#/app/child/attendance', page: function(ctx){ return ParentChildPage({ session: ctx.session, mode: 'attendance' }); } },
+  { path: '#/app/child/leave', page: function(ctx){ return ParentChildPage({ session: ctx.session, mode: 'leave' }); } },
+  { path: '#/app/child/timetable', page: function(ctx){ return ParentChildPage({ session: ctx.session, mode: 'timetable' }); } },
+  { path: '#/app/child/academics', page: function(ctx){ return ParentChildPage({ session: ctx.session, mode: 'academics' }); } }
+];
+
+function findRoute(path){
+  for(var i = 0; i < routes.length; i++){
+    var r = routes[i];
+    var keys = [];
+    var pattern = r.path.replace(/:([^/]+)/g, function(_, k){ keys.push(k); return '([^/]+)'; });
+    var m = path.match(new RegExp('^' + pattern + '$'));
+    if(m){
+      var params = {};
+      keys.forEach(function(k, idx){ params[k] = decodeURIComponent(m[idx + 1]); });
+      return { route: r, params: params };
+    }
+  }
+  return null;
+}
+function routeMatches(pattern, path){
+  var expected = pattern.split('/'), actual = path.split('/');
+  if(expected.length !== actual.length) return false;
+  for(var i = 0; i < expected.length; i++) if(expected[i].charAt(0) !== ':' && expected[i] !== actual[i]) return false;
+  return true;
+}
+function isRouteAllowed(session, path){
+  if(session.role === 'chairman') return true;
+  var patterns = [];
+  (NAV[session.role] || []).forEach(function(group){ group.items.forEach(function(item){ patterns.push(item.path); }); });
+  return patterns.some(function(pattern){ return routeMatches(pattern, path); });
+}
+
+function renderRoute(){
+  try {
+    var path = location.hash || '#/login';
+    var session = state.session;
+    log('Route: ' + path + ' session: ' + (session ? session.role : 'none'));
+    if(path !== '#/login' && !session){ location.hash = '#/login'; return; }
+    if(path === '#/login' && session){ location.hash = '#/app/dashboard'; return; }
+    var match = findRoute(path);
+    if(!match){
+      if(!session){ location.hash = '#/login'; return; }
+      mountPage(AppShell({ session: session, activePath: path, title: 'Not Found', childrenHtml: '<div class="empty-state"><h4>Page not found</h4><p>' + esc(path) + '</p></div>' }));
+      return;
+    }
+    if(session && !isRouteAllowed(session, path)){
+      mountPage(AppShell({ session: session, activePath: path, title: 'Access restricted', childrenHtml: '<div class="empty-state"><h4>Not available</h4></div>' }));
+      return;
+    }
+    var page = match.route.page({ session: session, params: match.params });
+    mountPage(page);
+  } catch(e){
+    log('Route error: ' + e.message, e);
+    document.getElementById('app-root').innerHTML = '<div style="padding:40px;font-family:Arial"><h2 style="color:#dc2626">Error loading page</h2><pre style="background:#f6f8fc;padding:20px;border-radius:8px;overflow:auto">' + esc(e.message) + '\n\n' + esc(e.stack || '') + '</pre></div>';
+  }
+}
+
+function mountPage(page){
+  var root = document.getElementById('app-root');
+  root.innerHTML = page.html;
+  if(page.mount) page.mount(root);
+}
+
+window.addEventListener('hashchange', renderRoute);
+on('session:change', renderRoute);
+on('department:change', function(){ renderRoute(); });
+
+log('Initializing app');
+
+bootstrapDepartment(state.departmentId);
+restoreSession();
+
+if(!location.hash) location.hash = '#/login';
+renderRoute();
+
+setInterval(function(){ try { checkClassReminders(); } catch(e){} }, 60000);
+
+log('App initialized successfully');
+
+})();
+</script>
