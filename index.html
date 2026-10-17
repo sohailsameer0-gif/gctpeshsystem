@@ -222,23 +222,9 @@ table.data .empty{text-align:center;padding:36px;color:var(--g500);font-style:it
 <div id="modal-root"></div>
 
 <script>
-/* ================================================================
-   GCT PESHAWAR — B.Tech DEPARTMENT ERP
-   Single-file build. Fixes applied vs. original:
-   - Teacher-controlled QR (chairman only monitors; no kill-switch)
-   - Actual start time + grace-period lateness (scheduled vs actual)
-   - Live chairman class monitoring (real session data)
-   - Substitute teacher workflow (request/accept/decline/assign)
-   - Student leave ↔ attendance integration (already existed, tightened)
-   - Manual attendance form (previously missing)
-   - Fixed M.findSessionByToken exposure, lateness calc, date parsing
-   - Shared-mode gate: local-only by default, clear banner; Supabase
-     adapter scaffold present but OFF until configured (see README).
-   ================================================================ */
 (function(){
 "use strict";
 
-/* ============ UTILS ============ */
 var $=function(s,r){return (r||document).querySelector(s);};
 var $$=function(s,r){return Array.prototype.slice.call((r||document).querySelectorAll(s));};
 var uid=function(p){return (p||"id")+"_"+Date.now().toString(36)+"_"+Math.random().toString(36).slice(2,7);};
@@ -255,7 +241,6 @@ var money=function(v){return "Rs "+num(v).toLocaleString("en-PK");};
 var cleanMobile=function(m){var d=String(m||"").replace(/\D/g,"");if(d.indexOf("92")===0)return d;if(d.indexOf("0")===0)return "92"+d.slice(1);if(d.length===10)return "92"+d;return d;};
 var dayOfWeek=function(d){return ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"][new Date(d).getDay()];};
 
-/* ============ CONSTANTS ============ */
 var ROLE_LABELS={chairman:"Chairman",teacher:"Teacher",coordinator:"Coordinator",clerk:"Assistant Clerk",student:"Student",parent:"Parent"};
 var ATT={PRESENT:"present",LATE:"late",ABSENT:"absent",LEAVE:"approved_leave"};
 var LEAVE_STATUS={WITH_TEACHER:"with_teacher",WITH_CHAIRMAN:"with_chairman",APPROVED:"approved",REJECTED:"rejected"};
@@ -287,16 +272,13 @@ var DEFAULT_SETTINGS={
   chairmanSignatureDataUrl:"",
   shortageThreshold:70,
   lateToAbsenceThreshold:3,
-  /* NEW: grace period after ACTUAL class start before a check-in counts as late */
   gracePeriodMinutes:15,
   currentTerm:"Spring",
   currentYear:2026,
   qrValiditySeconds:45,
-  /* Kept for backward compat with any UI, but chairman no longer toggles QR */
   qrAttendanceEnabled:true
 };
 
-/* ============ STORAGE ============ */
 var STORAGE_KEY="gct_erp_v12";
 var SIDEBAR_SCROLL_KEY="gct_sidebar_scroll";
 var OFFLINE_QUEUE_KEY="gct_offline_q";
@@ -304,7 +286,6 @@ var DEVICE_BIND_KEY="gct_device_bind";
 var CLASS_REMINDER_KEY="gct_reminder_sent";
 var FP_KEY="gct_device_fp";
 
-/* ============ FINGERPRINT ============ */
 function simpleHash(s){var h=0;for(var i=0;i<s.length;i++){h=((h<<5)-h)+s.charCodeAt(i);h|=0;}return Math.abs(h).toString(36);}
 function getDeviceFingerprint(){
   var fp=null;try{fp=localStorage.getItem(FP_KEY);}catch(e){}
@@ -316,12 +297,10 @@ function getDeviceFingerprint(){
   return fp;
 }
 
-/* ============ EVENT BUS ============ */
 var listeners=new Map();
 var on=function(ev,h){if(!listeners.has(ev))listeners.set(ev,new Set());listeners.get(ev).add(h);return function(){listeners.get(ev).delete(h);};};
 var emit=function(ev,p){(listeners.get(ev)||[]).forEach(function(h){try{h(p);}catch(e){console.error(e);}});};
 
-/* ============ STATE ============ */
 var initialState={
   session:null,settings:null,
   students:[],parents:[],parentLinks:[],
@@ -331,7 +310,6 @@ var initialState={
   attendanceSessions:[],attendanceRecords:[],
   leaveApplications:[],teacherLeaveApplications:[],
   lateScanRequests:[],
-  /* NEW: substitution workflow */
   substitutionRequests:[],
   committees:[],committeeMembers:[],committeeMeetings:[],
   parentTeacherMeetings:[],
@@ -350,24 +328,20 @@ function saveState(){try{localStorage.setItem(STORAGE_KEY,JSON.stringify(state))
 function setState(partial,ev){Object.assign(state,partial);saveState();if(ev)emit(ev,state);emit("state:change",state);}
 function updateColl(name,fn){var patch={};patch[name]=fn(state[name]||[]);setState(patch,name+":change");}
 
-/* ============ SIDEBAR SCROLL ============ */
 function saveSidebarScroll(){var sb=document.getElementById("appSidebar");if(sb){try{sessionStorage.setItem(SIDEBAR_SCROLL_KEY,String(sb.scrollTop));}catch(e){}}}
 function restoreSidebarScroll(){var sb=document.getElementById("appSidebar");if(!sb)return;try{var v=sessionStorage.getItem(SIDEBAR_SCROLL_KEY);if(v!==null&&v!=="")sb.scrollTop=Number(v)||0;}catch(e){}}
 
-/* ============ AUDIT ============ */
 function audit(o){
   var row={id:uid("log"),userId:o.userId||"system",role:o.role||"system",action:o.action,module:o.module,recordId:o.recordId||null,before:o.before||null,after:o.after||null,timestamp:nowIso()};
   updateColl("auditLogs",function(a){return a.concat([row]);});
 }
 
-/* ============ SETTINGS ============ */
 function getSettings(){
   if(!state.settings){state.settings=Object.assign({},DEFAULT_SETTINGS,{id:"settings_singleton"});saveState();}
   return Object.assign({},DEFAULT_SETTINGS,state.settings);
 }
 function updateSettings(patch){state.settings=Object.assign({},getSettings(),patch);saveState();audit({userId:state.session?state.session.userId:null,role:state.session?state.session.role:null,action:"settings.update",module:"settings"});}
 
-/* ============ NOTIFICATIONS ============ */
 function pushNotification(o){
   var row={id:uid("ntf"),recipientId:o.recipientId||null,recipientRole:o.recipientRole||null,title:o.title,message:o.message,type:o.type||"info",senderId:o.senderId||null,senderRole:o.senderRole||"system",relatedRecordId:o.relatedRecordId||null,relatedModule:o.relatedModule||null,relatedRoute:o.relatedRoute||null,read:false,createdAt:nowIso()};
   updateColl("notifications",function(a){return a.concat([row]);});
@@ -386,7 +360,6 @@ function markAllRead(userId,role,linkedId){var ids=new Set(notifsFor(userId,role
 function notifyRole(role,title,message,opts){opts=opts||{};pushNotification({recipientRole:role,title:title,message:message,type:opts.type||"info",senderId:opts.senderId||(state.session?state.session.userId:null),senderRole:opts.senderRole||(state.session?state.session.role:"system"),relatedRecordId:opts.relatedRecordId||null,relatedModule:opts.relatedModule||null,relatedRoute:opts.relatedRoute||null});}
 function notifyUser(userId,role,title,message,opts){opts=opts||{};pushNotification({recipientId:userId,recipientRole:role,title:title,message:message,type:opts.type||"info",senderId:opts.senderId||(state.session?state.session.userId:null),senderRole:opts.senderRole||(state.session?state.session.role:"system"),relatedRecordId:opts.relatedRecordId||null,relatedModule:opts.relatedModule||null,relatedRoute:opts.relatedRoute||null});}
 
-/* ============ PERMISSIONS ============ */
 var PERMS={
   chairman:["*"],
   teacher:["dashboard.view","my-classes.view","my-timetable.view","attendance.mark","attendance.view","attendance.manual","attendance.correct","qr.start","leaves.review","leaves.forward","leaves.view","my-leave.submit","my-leave.view","students.view.assigned","academics.manage.assigned","notifications.view","topics.upload","profile.change","password.change","courses.create","ptm.view","assignments.manage","assignments.view","substitution.request","substitution.respond"],
@@ -401,7 +374,6 @@ function isFullAccess(session){return !!session&&session.role==="chairman";}
 function isReadOnly(session){return false;}
 function blockIfReadOnly(session){if(isReadOnly(session))throw new Error("Read-only access.");}
 
-/* ============ ACCOUNTS ============ */
 var DEFAULT_ACCOUNTS=[
   {email:"chairman@gct.edu.pk",password:"chairman",role:"chairman",displayName:"Prof. Chairman",status:"Approved",linkedId:null},
   {email:"coordinator@gct.edu.pk",password:"coordinator",role:"coordinator",displayName:"Coordinator",status:"Approved",linkedId:null},
@@ -513,9 +485,6 @@ function updateOwnProfile(session,patch){
   if(session.role==="student"&&session.linkedId)updateColl("students",function(a){return a.map(function(s){return s.id===session.linkedId?Object.assign({},s,{photoDataUrl:patch.photoDataUrl!==undefined?patch.photoDataUrl:s.photoDataUrl}):s;});});
 }
 
-/* ============================================================
-   QR GENERATOR — Version 1–10, ECC L (pure JS)
-   ============================================================ */
 var QR=(function(){
   var ECC_L={1:[7,1,19,0,0],2:[10,1,34,0,0],3:[15,1,55,0,0],4:[20,1,80,0,0],5:[26,1,108,0,0],6:[18,2,68,0,0],7:[20,2,78,0,0],8:[24,2,97,0,0],9:[30,2,116,0,0],10:[18,2,68,2,69]};
   var ALIGN={1:[],2:[6,18],3:[6,22],4:[6,26],5:[6,30],6:[6,34],7:[6,22,38],8:[6,24,42],9:[6,26,46],10:[6,28,50]};
@@ -573,9 +542,6 @@ var QR=(function(){
   return {encode:encode,draw:draw};
 })();
 
-/* ============================================================
-   PRINT HELPERS
-   ============================================================ */
 function printBaseStyles(){return 'body{font-family:Arial,sans-serif;padding:20mm 15mm;color:#111;background:#fff}.lh-img{width:100%;max-height:140px;overflow:hidden;margin-bottom:8px}.lh-img img{width:100%;height:auto;display:block}.print-hd{text-align:center;border-bottom:2px solid #000;padding-bottom:10px;margin-bottom:14px}.print-hd h1{font-size:18px;margin:0;text-transform:uppercase}.print-hd h2{font-size:13px;margin:3px 0;font-weight:600}.print-hd p{font-size:11px;margin:2px 0}.doc-title{text-align:center;font-size:15px;font-weight:700;margin:12px 0 6px;text-transform:uppercase}table{width:100%;border-collapse:collapse;font-size:11px;margin-top:10px}th,td{border:1px solid #333;padding:6px;text-align:left;vertical-align:top}th{background:#e8eef7;font-weight:700}.print-ft{text-align:center;font-size:10px;color:#555;margin-top:18px}.sign-area{display:flex;justify-content:space-between;margin-top:40px}.sign-block{text-align:center;font-size:12px;width:45%}.sign-line-top{border-top:1px solid #000;padding-top:4px;margin-top:40px}';}
 function printHeaderHtml(){var s=getSettings();if(s.letterheadDataUrl)return '<div class="lh-img"><img src="'+s.letterheadDataUrl+'" alt="Letterhead" /></div>';return '<div class="print-hd"><h1>'+esc(s.collegeName)+'</h1><h2>'+esc(s.departmentName)+'</h2><p>'+esc(s.address)+(s.phone?' · Phone: '+esc(s.phone):'')+(s.email?' · Email: '+esc(s.email):'')+'</p></div>';}
 function printFooterHtml(){var s=getSettings();return '<div class="print-ft">'+esc(s.footerText)+'</div>';}
@@ -586,9 +552,6 @@ function openPrintWindow(title,bodyHtml){
   w.document.close();setTimeout(function(){w.focus();w.print();},350);
 }
 
-/* ============================================================
-   OFFLINE QUEUE
-   ============================================================ */
 function getOfflineQueue(){try{var r=localStorage.getItem(OFFLINE_QUEUE_KEY);return r?JSON.parse(r):[];}catch(e){return [];}}
 function saveOfflineQueue(q){try{localStorage.setItem(OFFLINE_QUEUE_KEY,JSON.stringify(q));}catch(e){}}
 function enqueueOffline(item){var q=getOfflineQueue();item.id=uid("off");item.queuedAt=nowIso();q.push(item);saveOfflineQueue(q);return item;}
@@ -616,9 +579,6 @@ function flushOfflineQueue(){
   return done;
 }
 
-/* ============================================================
-   ATTENDANCE SUMMARY — uses actualStart-aware lateness
-   ============================================================ */
 function attendanceSummary(studentId,courseId){
   var st=getSettings();
   var recs=state.attendanceRecords.filter(function(r){return r.studentId===studentId&&(!courseId||r.courseId===courseId);});
@@ -634,9 +594,6 @@ function attendanceSummary(studentId,courseId){
   return {total:total,present:present,late:late,absent:absent,leave:leave,totalLateMin:totalLateMin,converted:conv,rawPercentage:raw,adjustedPercentage:adj,isShortage:adj<(st.shortageThreshold||70)};
 }
 
-/* ============================================================
-   APPROVED LEAVE → ATTENDANCE INTEGRATION
-   ============================================================ */
 function applyApprovedLeave(leave){
   if(state.attendanceRecords.some(function(r){return r.leaveId===leave.id;}))return;
   var stu=state.students.find(function(s){return s.id===leave.studentId;});
@@ -662,10 +619,6 @@ function applyApprovedLeave(leave){
   }
 }
 
-/* ============================================================
-   LATE-SCAN APPROVAL (legacy chairman override) — kept but
-   NOT required for grace-period lateness.
-   ============================================================ */
 function hasLateApprovalToday(studentId){return state.lateScanRequests.some(function(r){return r.studentId===studentId&&r.date===todayIso()&&r.status==="approved";});}
 function hasPendingLateRequest(studentId){return state.lateScanRequests.some(function(r){return r.studentId===studentId&&r.date===todayIso()&&r.status==="pending";});}
 function requestLateScanApproval(session,o){
@@ -687,16 +640,8 @@ function decideLateScan(session,requestId,decision,remarks){
   notifyUser(row.studentId,"student","Late Scan "+(decision==="approved"?"Approved":"Rejected"),decision==="approved"?"You can now scan QR for the rest of today.":(remarks||"Rejected."),{type:decision==="approved"?"success":"error",relatedModule:"lateScanRequests",relatedRoute:"#/app/scan-qr"});
 }
 
-/* ============================================================
-   QR SESSION LIFECYCLE — TEACHER-CONTROLLED
-   ============================================================ */
 function secureToken(){var b=new Uint8Array(12);try{(window.crypto||window.msCrypto).getRandomValues(b);}catch(e){for(var i=0;i<b.length;i++)b[i]=Math.floor(Math.random()*256);}var a=[];for(var i=0;i<b.length;i++)a.push(b[i].toString(16).padStart(2,"0"));return "qr_"+a.join("");}
 
-/**
- * Start a class session + QR. Teacher-confirmed actual start time.
- * Records: scheduledStart (from timetable), actualStart (confirmed),
- * delayMinutes (actual - scheduled), qrToken, qrExpiresAt.
- */
 function startClassSession(session,data){
   requirePermission(session,"qr.start");
   if(!session.linkedId)throw new Error("Not linked to a teacher record");
@@ -704,7 +649,6 @@ function startClassSession(session,data){
   if(!slot)throw new Error("Timetable slot not found");
   if(slot.teacherId!==session.linkedId)throw new Error("You are not the assigned teacher for this class");
 
-  /* Prevent duplicate open session for same slot+date */
   var exists=state.attendanceSessions.find(function(s){return s.timetableId===slot.id&&s.date===data.date&&s.status==="open";});
   if(exists)throw new Error("A session is already open for this class today");
 
@@ -738,7 +682,6 @@ function startClassSession(session,data){
   updateColl("attendanceSessions",function(a){return a.concat([row]);});
   audit({userId:session.userId,role:session.role,action:"session.start",module:"attendanceSessions",recordId:row.id});
 
-  /* Notify chairman + enrolled students */
   notifyRole("chairman","Class Started",
     (session.displayName)+" started "+slot.startTime+" class"+(delay>0?" ("+delay+"m late)":""),
     {type:"success",relatedRecordId:row.id,relatedModule:"attendanceSessions",relatedRoute:"#/app/live-monitor"});
@@ -764,11 +707,6 @@ function rotateQr(session,sessionId){
 }
 function findSessionByToken(token){return state.attendanceSessions.find(function(s){return s.qrToken===token;})||null;}
 
-/**
- * Student scans. Lateness rule per spec:
- *   LATE iff arrival > actualStart + gracePeriodMinutes
- *   Never relative to scheduledStart alone.
- */
 function scanQr(session,o){
   if(session.role==="student"&&session.linkedId!==o.studentId)throw new Error("You can only mark your own attendance");
   if(session.role==="student"){
@@ -789,7 +727,6 @@ function scanQr(session,o){
   if(stu.currentSectionId!==att.sectionId)throw new Error("Wrong section for this class");
   if(state.attendanceRecords.some(function(r){return r.sessionId===att.id&&r.studentId===o.studentId;}))throw new Error("Already marked for this class");
 
-  /* If student has approved leave covering this date+course, don't overwrite */
   var onLeave=state.attendanceRecords.some(function(r){return r.studentId===o.studentId&&r.courseId===att.courseId&&r.date===att.date&&r.leaveId&&r.status===ATT.LEAVE;});
   if(onLeave)throw new Error("You are on approved leave for this class.");
 
@@ -800,7 +737,6 @@ function scanQr(session,o){
   var arrivalM=t2m(arrival);
   var late = arrivalM > (actualStartM + grace);
 
-  /* Legacy per-day chairman approval for late scans (kept) */
   if(late&&!hasLateApprovalToday(o.studentId)){
     throw new Error("You are late by more than "+grace+" minutes. Submit a written application to the Chairman to enable late scanning for today.");
   }
@@ -835,7 +771,6 @@ function manualAttendance(session,o){
   if(!can(session.role,"attendance.manual")&&session.role!=="chairman")throw new Error("Permission denied");
   var stu=state.students.find(function(s){return s.id===o.studentId;});
   if(!stu)throw new Error("Student not found");
-  /* If leave approved for that course+date, warn */
   var onLeave=state.attendanceRecords.some(function(r){return r.studentId===o.studentId&&r.courseId===o.courseId&&r.date===o.date&&r.leaveId&&r.status===ATT.LEAVE;});
   if(onLeave&&o.status!==ATT.LEAVE)throw new Error("Student has approved leave for this class — cannot mark "+o.status+".");
   var dup=state.attendanceRecords.find(function(r){return r.studentId===o.studentId&&r.date===o.date&&r.courseId===o.courseId;});
@@ -854,9 +789,6 @@ function manualAttendance(session,o){
   return row;
 }
 
-/* ============================================================
-   STUDENTS
-   ============================================================ */
 function validateStudent(d,opts){
   opts=opts||{};var cur=opts.currentId||null;var e={};
   var req=function(k,m){if(!String(d[k]||"").trim())e[k]=m||"Required";};
@@ -928,9 +860,6 @@ function promoteStudent(session,studentId,targetSemId,targetSecId,remarks){
   notifyUser(studentId,"student","Semester Promoted","You have been promoted.",{type:"success"});
 }
 
-/* ============================================================
-   COURSES
-   ============================================================ */
 function createCourse(session,data){
   if(!can(session.role,"courses.create"))throw new Error("Permission denied");
   var code=String(data.code||"").trim(),name=String(data.name||"").trim();
@@ -974,9 +903,6 @@ function teacherTeachesCourse(teacherId,courseId){
   return false;
 }
 
-/* ============================================================
-   TIMETABLE
-   ============================================================ */
 function validateSlot(d,opts){
   opts=opts||{};var cur=opts.currentId||null;var e={};
   if(!d.day)e.day="Day required";
@@ -1024,9 +950,6 @@ function deleteSlot(session,id){
   updateColl("timetable",function(a){return a.filter(function(t){return t.id!==id;});});
 }
 
-/* ============================================================
-   STUDENT LEAVE
-   ============================================================ */
 function submitStudentLeave(session,data){
   if(session.role!=="student")throw new Error("Only students");
   if(!session.linkedId)throw new Error("Not linked");
@@ -1078,12 +1001,6 @@ function chairmanDecide(session,leaveId,decision,remarks){
   notifyUser(lv.studentId,"student","Leave "+(decision==="approve"?"Approved":"Rejected"),remarks,{type:decision==="approve"?"success":"error",relatedRecordId:leaveId,relatedModule:"leaveApplications",relatedRoute:"#/app/my-leave"});
 }
 
-/* ============================================================
-   TEACHER LEAVE + SUBSTITUTE WORKFLOW
-   ============================================================ */
-
-/** Eligible substitute: same dept/subject area, free at that slot's day/time,
- *  not the original teacher, not on approved leave for that date. */
 function findEligibleSubstitutes(timetableId,dateIso){
   var slot=state.timetable.find(function(t){return t.id===timetableId;});
   if(!slot)return [];
@@ -1091,13 +1008,11 @@ function findEligibleSubstitutes(timetableId,dateIso){
   return state.teachers.filter(function(t){
     if(t.id===slot.teacherId)return false;
     if(t.active===false)return false;
-    /* Teacher must be free at that day+time */
     var busy=state.timetable.some(function(other){
       if(other.id===slot.id||other.day!==day||other.teacherId!==t.id)return false;
       return t2m(slot.startTime)<t2m(other.endTime)&&t2m(slot.endTime)>t2m(other.startTime);
     });
     if(busy)return false;
-    /* Not on approved leave that day */
     var onLeave=state.teacherLeaveApplications.some(function(l){
       return l.teacherId===t.id&&l.status===LEAVE_STATUS.APPROVED&&dateIso>=l.startDate&&dateIso<=l.endDate;
     });
@@ -1124,7 +1039,6 @@ function decideTeacherLeave(session,id,decision,remarks){
   updateColl("teacherLeaveApplications",function(a){return a.map(function(l){return l.id===id?Object.assign({},l,{status:decision==="approve"?LEAVE_STATUS.APPROVED:LEAVE_STATUS.REJECTED,chairmanRemarks:remarks,decidedAt:nowIso()}):l;});});
   notifyUser(before.teacherId,"teacher","Your Leave "+(decision==="approve"?"Approved":"Rejected"),remarks,{type:decision==="approve"?"success":"error",relatedRecordId:id,relatedModule:"teacherLeaveApplications",relatedRoute:"#/app/teacher-leaves"});
 
-  /* If approved, identify affected classes and create substitution requests */
   if(decision==="approve"){
     var affectedSlots=state.timetable.filter(function(t){return t.teacherId===before.teacherId;});
     var cur=new Date(before.startDate+"T00:00:00");
@@ -1168,7 +1082,6 @@ function acceptSubstitution(session,id){
   if(eligible.indexOf(session.linkedId)<0)throw new Error("You are no longer free for this slot");
 
   updateColl("substitutionRequests",function(a){return a.map(function(r){return r.id===id?Object.assign({},r,{status:"accepted",substituteTeacherId:session.linkedId,decidedAt:nowIso()}):r;});});
-  /* Update the timetable slot's effective teacher for that date via a substitution map */
   audit({userId:session.userId,role:session.role,action:"substitution.accept",module:"substitutionRequests",recordId:id});
   notifyRole("chairman","Substitute Accepted",session.displayName+" will cover the class on "+fmtDate(req.date)+".",{type:"success",relatedRecordId:id,relatedModule:"substitutionRequests",relatedRoute:"#/app/substitutions"});
   var orig=state.teachers.find(function(t){return t.id===req.originalTeacherId;});
@@ -1197,7 +1110,6 @@ function chairmanAssignSubstitute(session,id,substituteId){
   if(orig)notifyUser(orig.id,"teacher","Substitute Assigned",session.displayName+" assigned a substitute for your class on "+fmtDate(req.date)+".",{relatedRecordId:id,relatedModule:"substitutionRequests",relatedRoute:"#/app/substitutions"});
 }
 
-/** Resolve the effective teacher for a slot on a date (substitute overrides). */
 function effectiveTeacherId(timetableId,dateIso){
   var slot=state.timetable.find(function(t){return t.id===timetableId;});
   if(!slot)return null;
@@ -1205,9 +1117,6 @@ function effectiveTeacherId(timetableId,dateIso){
   return sub?sub.substituteTeacherId:slot.teacherId;
 }
 
-/* ============================================================
-   COMMITTEES
-   ============================================================ */
 function findCommitteeMemberDupe(committeeId,name,designation,excludeId){
   var n=String(name||"").trim().toLowerCase();
   var d=String(designation||"").trim().toLowerCase();
@@ -1265,7 +1174,6 @@ function updateCommitteeMember(session,id,patch){
 function removeCommitteeMember(session,id){
   requirePermission(session,"committees.manage");
   updateColl("committeeMembers",function(a){return a.map(function(m){return m.id===id?Object.assign({},m,{status:"Removed",removedAt:nowIso()}):m;});});
-  /* Resequence */
   var removed=state.committeeMembers.find(function(m){return m.id===id;});
   if(removed){
     var remaining=state.committeeMembers.filter(function(m){return m.committeeId===removed.committeeId&&m.status==="Active";}).sort(function(a,b){return (a.serialNo||0)-(b.serialNo||0);});
@@ -1286,9 +1194,6 @@ function deleteCommittee(session,id){
   updateColl("committeeMembers",function(a){return a.filter(function(m){return m.committeeId!==id;});});
 }
 
-/* ============================================================
-   MEETINGS + PTM
-   ============================================================ */
 function addMeeting(session,data){
   requirePermission(session,"meetings.manage");
   var row=Object.assign({id:uid("cme"),createdAt:nowIso()},data,{status:data.status||"Pending",reschedules:[]});
@@ -1333,9 +1238,6 @@ function deletePtm(session,id){
   updateColl("parentTeacherMeetings",function(a){return a.filter(function(m){return m.id!==id;});});
 }
 
-/* ============================================================
-   ASSIGNMENTS
-   ============================================================ */
 function createAssignment(session,data){
   if(session.role!=="teacher"&&session.role!=="chairman")throw new Error("Only teachers or Chairman");
   var e={};
@@ -1372,9 +1274,6 @@ function gradeAssignment(session,subId,grade,feedback){
   if(sub)notifyUser(sub.studentId,"student","Assignment Graded","Your submission got: "+grade,{relatedRecordId:subId,relatedModule:"assignmentSubmissions",relatedRoute:"#/app/my-assignments"});
 }
 
-/* ============================================================
-   SHARED FILES
-   ============================================================ */
 function shareFile(session,data){
   if(session.role!=="chairman")throw new Error("Only Chairman can share files");
   var row={id:uid("sf"),title:data.title,description:data.description||"",fileName:data.fileName,fileType:data.fileType,fileSize:data.fileSize,dataUrl:data.dataUrl,sharedWithRoles:data.sharedWithRoles||[],sharedBy:session.userId,sharedByName:session.displayName,sharedAt:nowIso()};
@@ -1394,15 +1293,9 @@ function sharedFilesFor(session){
   });
 }
 
-/* ============================================================
-   WHATSAPP
-   ============================================================ */
 function waLink(mobile,message){var m=cleanMobile(mobile);if(!m)return null;return "https://wa.me/"+m+"?text="+encodeURIComponent(message||"");}
 function waButtonHtml(mobile,message,label){var link=waLink(mobile,message);if(!link)return "";return '<a href="'+link+'" target="_blank" rel="noopener" class="wa-btn" title="WhatsApp '+(label||"")+'"><svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M17.5 14.4c-.3-.1-1.7-.8-2-.9-.3-.1-.5-.1-.7.1-.2.3-.8.9-.9 1.1-.2.2-.3.2-.6.1-1.5-.7-2.4-1.3-3.4-2.9-.3-.4.3-.4.8-1.4.1-.2 0-.3 0-.5s-.7-1.6-.9-2.2c-.2-.6-.5-.5-.7-.5h-.6c-.2 0-.5.1-.8.4-.3.3-1 1-1 2.4s1.1 2.8 1.2 3c.1.2 2.1 3.2 5.1 4.5 1.9.8 2.6.9 3.5.7.6-.1 1.7-.7 1.9-1.4.2-.7.2-1.3.2-1.4-.1-.1-.3-.2-.6-.3zM12 2a10 10 0 0 0-8.6 15L2 22l5.2-1.4A10 10 0 1 0 12 2z"/></svg></a>';}
 
-/* ============================================================
-   CLASS REMINDERS
-   ============================================================ */
 function getReminderStore(){try{var raw=localStorage.getItem(CLASS_REMINDER_KEY);return raw?JSON.parse(raw):{};}catch(e){return {};}}
 function saveReminderStore(o){try{localStorage.setItem(CLASS_REMINDER_KEY,JSON.stringify(o));}catch(e){}}
 function checkClassReminders(){
@@ -1436,9 +1329,6 @@ function testClassReminder(){
   toast("Test reminder sent","success");
 }
 
-/* ============================================================
-   EXPOSE MODULES
-   ============================================================ */
 window.__GCT__={
   $:$,$$:$$,uid:uid,nowIso:nowIso,todayIso:todayIso,esc:esc,fmtDate:fmtDate,fmtDT:fmtDT,fmtTime:fmtTime,t2m:t2m,m2t:m2t,num:num,money:money,cleanMobile:cleanMobile,dayOfWeek:dayOfWeek,simpleHash:simpleHash,getDeviceFingerprint:getDeviceFingerprint,
   STORAGE_KEY:STORAGE_KEY,SIDEBAR_SCROLL_KEY:SIDEBAR_SCROLL_KEY,OFFLINE_QUEUE_KEY:OFFLINE_QUEUE_KEY,DEVICE_BIND_KEY:DEVICE_BIND_KEY,CLASS_REMINDER_KEY:CLASS_REMINDER_KEY,
@@ -1479,9 +1369,6 @@ window.__GCT__={
 </script>
 
 <script>
-/* ============================================================
-   UI LAYER — icons, primitives, shell, pages, router, boot
-   ============================================================ */
 (function(){
 "use strict";
 var G=window.__GCT__,M=G.mod;
@@ -1497,17 +1384,12 @@ var DAYS=G.DAYS,SECTIONS=G.SECTIONS,LEAVE_TYPES=G.LEAVE_TYPES,STUDENT_STATUS=G.S
 var authLogin=G.authLogin,authLogout=G.authLogout,registerAccount=G.registerAccount,approveAccount=G.approveAccount,rejectAccount=G.rejectAccount,changeOwnPassword=G.changeOwnPassword,updateOwnProfile=G.updateOwnProfile,makeDemoAccounts=G.makeDemoAccounts;
 var DEFAULT_SETTINGS=G.DEFAULT_SETTINGS;
 
-/* ============ SHARED-MODE GATE ============ */
-/* Per spec §11.8: don't pretend shared data works. Show a clear banner.
-   To enable shared mode, follow README_Supabase.md and set window.GCT_SHARED
-   before this script runs. */
 var SHARED_MODE = !!(window.GCT_SHARED && window.GCT_SHARED.enabled);
 function sharedBannerHtml(){
   if(SHARED_MODE) return '<div class="banner-shared">🌐 <strong>Shared Mode: ON</strong> — records sync across users via Supabase.</div>';
   return '<div class="banner-warn">⚠ <strong>Shared Mode: OFF</strong> — data is stored in this browser only (localStorage). Multiple users will NOT see each other\'s records. See README_Supabase.md to enable shared mode.</div>';
 }
 
-/* ============ ICONS ============ */
 var I={
   dashboard:'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/><rect x="14" y="12" width="7" height="9"/><rect x="3" y="16" width="7" height="5"/></svg>',
   bell:'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>',
@@ -1545,7 +1427,6 @@ var I={
   swap:'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>'
 };
 
-/* ============ PRIMITIVES ============ */
 function toast(msg,type,title){
   type=type||"info";
   var el=document.createElement("div");
@@ -1627,7 +1508,6 @@ function uploadFile(file){
 }
 function statCard(l,v,h,c){return '<div class="stat-card '+(c||"")+'"><div class="label">'+esc(l)+'</div><div class="value">'+v+'</div>'+(h?'<div class="hint">'+esc(h)+'</div>':'')+'</div>';}
 
-/* ============ NAV ============ */
 var NAV={
   chairman:[
     {group:"Overview",items:[{label:"Dashboard",path:"#/app/dashboard",icon:I.dashboard},{label:"Live Monitor",path:"#/app/live-monitor",icon:I.monitor},{label:"Notifications",path:"#/app/notifications",icon:I.bell}]},
@@ -1714,7 +1594,6 @@ function AppShell(o){
   };
 }
 
-/* ============ LOGIN ============ */
 function LoginPage(){
   var accounts=makeDemoAccounts().filter(function(a){return a.status==="Approved";});
   var settings=getSettings();
@@ -1768,7 +1647,6 @@ function LoginPage(){
   };
 }
 
-/* ============ DASHBOARD (role-specific) ============ */
 function DashboardPage(ctx){
   var s=ctx.session;var st=getSettings();
   var body="";
@@ -1883,7 +1761,6 @@ function DashboardPage(ctx){
   return shell;
 }
 
-/* ============ LIVE MONITOR (Chairman) ============ */
 function LiveMonitorPage(ctx){
   var s=ctx.session;
   if(s.role!=="chairman")return AppShell({session:s,activePath:"#/app/live-monitor",title:"Live Monitor",childrenHtml:'<div class="empty-state"><h4>Chairman only</h4></div>'});
@@ -1961,7 +1838,6 @@ function LiveMonitorPage(ctx){
   });
 }
 
-/* ============ STUDENTS ============ */
 function StudentsPage(ctx){
   var s=ctx.session;
   var canEdit=["chairman","clerk"].indexOf(s.role)>=0;
@@ -2024,7 +1900,6 @@ function openStudentForm(o){
   });
 }
 
-/* ============ COURSES ============ */
 function CoursesPage(ctx){
   var s=ctx.session;
   var canManage=s.role==="chairman"||s.role==="clerk";
@@ -2036,8 +1911,10 @@ function CoursesPage(ctx){
         return '<tr><td><strong>'+esc(c.code)+'</strong></td><td>'+esc(c.name)+'</td><td>'+esc(sem?sem.name:"")+'</td><td>'+esc(c.creditHours)+'</td><td>'+esc(c.type||"")+'</td><td><span class="badge badge-success">'+esc(c.status||"Active")+'</span></td>'+(canManage?'<td class="text-right"><button class="btn btn-ghost btn-sm" data-edit="'+c.id+'">'+I.edit+'</button> <button class="btn btn-ghost btn-sm" data-del="'+c.id+'">'+I.trash+'</button></td>':'')+'</tr>';
       }).join("")||'<tr><td colspan="'+(canManage?7:6)+'" class="empty">No courses.</td></tr>')+
     '</tbody></table></div></div></div>',
-       onMount:function(root){
-      $("#lf",root).onsubmit=function(e){e.preventDefault();var d={};new FormData(e.target).forEach(function(v,k){d[k]=v;});try{M.submitStudentLeave(s,d);toast("Submitted","success");renderRoute();}catch(err){toast(err.message,"error");}};
+    onMount:function(root){
+      var b=$("#nc",root);if(b)b.onclick=function(){openCourseForm({session:s,onSaved:renderRoute});};
+      $$("[data-edit]",root).forEach(function(b){b.onclick=function(){openCourseForm({session:s,existing:state.courses.find(function(x){return x.id===b.dataset.edit;}),onSaved:renderRoute});};});
+      $$("[data-del]",root).forEach(function(b){b.onclick=function(){confirmDialog({title:"Delete Course",message:"Confirm?",confirmLabel:"Delete",danger:true}).then(function(ok){if(!ok)return;try{M.deleteCourse(s,b.dataset.del);toast("Deleted","success");renderRoute();}catch(e){toast(e.message,"error");}});};});
     }
   });
 }
@@ -2064,7 +1941,6 @@ function openCourseForm(o){
   });
 }
 
-/* ============ TIMETABLE ============ */
 function TimetablePage(ctx){
   var s=ctx.session;
   var canManage=s.role==="chairman"||s.role==="clerk";
@@ -2133,7 +2009,6 @@ function openTimetableForm(o){
   });
 }
 
-/* ============ QR START (Teacher) ============ */
 function QrStartPage(ctx){
   var s=ctx.session;
   if(s.role!=="teacher")return AppShell({session:s,activePath:"#/app/qr/start",title:"QR",childrenHtml:'<div class="empty-state"><h4>Teachers only</h4></div>'});
@@ -2202,11 +2077,9 @@ function showQrCard(root,s,sess){
   M.QR.draw(cv,sess.qrToken);
   $("#rotBtn",box).onclick=function(){M.rotateQr(s,sess.id);var s2=state.attendanceSessions.find(function(x){return x.id===sess.id;});if(s2){M.QR.draw(cv,s2.qrToken);$(".muted",box).textContent="Expires: "+fmtDT(s2.qrExpiresAt)+" · Delay: "+s2.delayMinutes+" min";}toast("QR rotated","success");};
   $("#printBtn",box).onclick=function(){M.openPrintWindow("QR Attendance",$("#qrCardWrap",box).outerHTML);};
-  /* Auto-rotate every 40s */
   var interval=setInterval(function(){if(!document.body.contains(cv)){clearInterval(interval);return;}var s2=state.attendanceSessions.find(function(x){return x.id===sess.id;});if(!s2||s2.status!=="open"){clearInterval(interval);return;}M.rotateQr(s,s2.id);var s3=state.attendanceSessions.find(function(x){return x.id===sess.id;});M.QR.draw(cv,s3.qrToken);},40000);
 }
 
-/* ============ MANUAL ATTENDANCE (Teacher) ============ */
 function AttendanceMarkPage(ctx){
   var s=ctx.session;
   if(s.role!=="teacher"&&s.role!=="chairman")return AppShell({session:s,activePath:"#/app/attendance/mark",title:"Manual Attendance",childrenHtml:'<div class="empty-state"><h4>Teachers only</h4></div>'});
@@ -2234,7 +2107,6 @@ function AttendanceMarkPage(ctx){
   });
 }
 
-/* ============ LEAVES ============ */
 function LeavesPage(ctx){
   var s=ctx.session;
   var leaves=state.leaveApplications.slice().sort(function(a,b){return new Date(b.submittedAt)-new Date(a.submittedAt);});
@@ -2290,7 +2162,6 @@ function TeacherLeavesPage(ctx){
   });
 }
 
-/* ============ SUBSTITUTIONS ============ */
 function SubstitutionsPage(ctx){
   var s=ctx.session;
   var list=state.substitutionRequests.slice().sort(function(a,b){return (b.date||"").localeCompare(a.date||"");});
@@ -2341,7 +2212,6 @@ function openAssignSubstitute(o){
   });
 }
 
-/* ============ LATE SCANS ============ */
 function LateScanRequestsPage(ctx){
   var s=ctx.session;
   if(s.role!=="chairman")return AppShell({session:s,activePath:"#/app/late-scan-requests",title:"Late Scans",childrenHtml:'<div class="empty-state"><h4>Chairman only</h4></div>'});
@@ -2361,7 +2231,6 @@ function LateScanRequestsPage(ctx){
   });
 }
 
-/* ============ QR SCAN (Student) ============ */
 function QrScanPage(ctx){
   var s=ctx.session;
   var approvedToday=M.hasLateApprovalToday(s.linkedId);
@@ -2388,7 +2257,6 @@ function QrScanPage(ctx){
   });
 }
 
-/* ============ COMMITTEES ============ */
 function CommitteesPage(ctx){
   var s=ctx.session;
   var canManage=can(s.role,"committees.manage");
@@ -2502,7 +2370,6 @@ function openMemberForm(o){
   });
 }
 
-/* ============ MEETINGS ============ */
 function MeetingsPage(ctx){
   var s=ctx.session;
   var canManage=can(s.role,"meetings.manage");
@@ -2579,7 +2446,6 @@ function openPtmForm(o){
   });
 }
 
-/* ============ ASSIGNMENTS ============ */
 function AssignmentsPage(ctx){
   var s=ctx.session;
   var canCreate=(s.role==="teacher"||s.role==="chairman");
@@ -2666,7 +2532,6 @@ function MyAssignmentsPage(ctx){
   });
 }
 
-/* ============ NOTIFICATIONS ============ */
 function NotificationsPage(ctx){
   var s=ctx.session;
   var notifs=notifsFor(s.userId,s.role,s.linkedId);
@@ -2691,7 +2556,6 @@ function NotificationsPage(ctx){
   });
 }
 
-/* ============ PROFILE / SETTINGS / REPORTS ============ */
 function MyProfilePage(ctx){
   var s=ctx.session;
   var initials=(s.displayName||"U").split(" ").map(function(x){return x[0];}).slice(0,2).join("").toUpperCase();
@@ -3005,7 +2869,6 @@ function ChildPage(ctx){
   return AppShell({session:s,activePath:path,title:s.role==="parent"?"My Child":stu.name,childrenHtml:body});
 }
 
-/* ============ ROUTER ============ */
 var routes=[
   {path:"#/login",page:LoginPage},
   {path:"#/app/dashboard",page:DashboardPage},
@@ -3054,7 +2917,6 @@ var routes=[
   {path:"#/app/child/timetable",page:function(ctx){return ChildPage({session:ctx.session,mode:"timetable"});}},
   {path:"#/app/child/academics",page:function(ctx){return ChildPage({session:ctx.session,mode:"academics"});}}
 ];
-/* Shared files page (not in the main page list above to keep it clean) */
 function SharedFilesPage(ctx){
   var s=ctx.session;
   var isChair=s.role==="chairman";
@@ -3110,7 +2972,6 @@ function mountPage(page){
 window.addEventListener("hashchange",renderRoute);
 G.on("session:change",renderRoute);
 
-/* ============ BOOTSTRAP ============ */
 function bootstrap(){
   if(!state.departments||!state.departments.length){
     var dep={id:uid("dep"),name:"B.Tech Department",code:"BTECH"};
