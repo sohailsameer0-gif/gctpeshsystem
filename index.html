@@ -2135,10 +2135,7 @@ function MyLeavePage(ctx){
   var mine=state.leaveApplications.filter(function(l){return l.studentId===s.linkedId;});
   return AppShell({
     session:s,activePath:"#/app/my-leave",title:"My Leave",
-    childrenHtml:'<div class="card mb-2"><div class="card-header"><h3>Apply for Leave</h3></div><div class="card-body"><form id="lf"><div class="form-grid"><div class="field"><label>Type</label><select name="leaveType">'+LEAVE_TYPES.map(function(t){return '<option>'+t+'</option>';}).join("")+'</select></div><div class="field"><label>Start</label><input name="startDate" type="date" value="'+todayIso()+'" /></div><div class="field"><label>End</label><input name="endDate" type="date" value="'+todayIso()+'" /></div><div class="field full"><label>Reason <span class="req">*</span></label><input name="reason" required /></div><div class="field full"><label>Description</label><textarea name="description" rows="2"></textarea></div></div><button type="submit" class="btn btn-primary mt-2">Submit</button></form></div></div>'+
-    '<div class="card"><div class="card-header"><h3>My History</h3></div><div class="card-body"><div class="table-wrap"><table class="data"><thead><tr><th>Type</th><th>From</th><th>To</th><th>Days</th><th>Status</th><th>Remarks</th></tr></thead><tbody>'+
-    (mine.map(function(l){var badge=l.status==="approved"?"badge-success":l.status==="rejected"?"badge-danger":"badge-warn";return '<tr><td>'+esc(l.leaveType)+'</td><td>'+fmtDate(l.startDate)+'</td><td>'+fmtDate(l.endDate)+'</td><td>'+l.days+'</td><td><span class="badge '+badge+'">'+esc(l.status)+'</span></td><td>'+esc(l.chairmanRemarks||l.teacherRemarks||"")+'</td></tr>';}).join("")||'<tr><td colspan="6" class="empty">None.</td></tr>')+
-    '</tbody></table></div></div></div>',
+    childrenHtml:'<div class="card mb-2">...</div>',
     onMount:function(root){
       $("#lf",root).onsubmit=function(e){e.preventDefault();var d={};new FormData(e.target).forEach(function(v,k){d[k]=v;});try{M.submitStudentLeave(s,d);toast("Submitted","success");renderRoute();}catch(err){toast(err.message,"error");}};
     }
