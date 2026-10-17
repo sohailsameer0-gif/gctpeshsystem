@@ -2970,72 +2970,79 @@ window.addEventListener("hashchange",renderRoute);
 G.on("session:change",renderRoute);
 
 function bootstrap(){
-  if(!state.departments||!state.departments.length){
-    var dep={id:uid("dep"),name:"B.Tech Department",code:"BTECH"};
-    var prog={id:uid("prg"),name:"BSc. Mechanical Engineering Technology",code:"BSC-MET",durationYears:4,totalSemesters:8,affiliatedTo:"UET Peshawar",departmentId:dep.id};
-    var batch={id:uid("bch"),name:new Date().getFullYear()+"-"+(new Date().getFullYear()+4),programId:prog.id};
-    var ordinals=["1st","2nd","3rd","4th","5th","6th","7th","8th"];
-    var sems=ordinals.map(function(o,i){return {id:uid("sem"),number:i+1,name:"Semester "+(i+1)+" ("+o+")",programId:prog.id};});
-    var secs=[];
-    sems.forEach(function(sem){SECTIONS.forEach(function(sn){secs.push({id:uid("sec"),name:sn,semesterId:sem.id,capacity:60});});});
-    state.departments=[dep];state.programs=[prog];state.batches=[batch];state.semesters=sems;state.sections=secs;
-    state.settings=Object.assign({},DEFAULT_SETTINGS,{id:"settings_singleton"});
-  }
-  if(!state.teachers||!state.teachers.length){
-    state.teachers=[
-      {id:uid("tch"),name:"Engr. Ahmed Khan",employeeCode:"T001",email:"teacher@gct.edu.pk",designation:"Lecturer",subject:"Applied Thermodynamics",mobile:"03001111111",active:true,createdAt:nowIso()},
-      {id:uid("tch"),name:"Engr. Bilal Ahmad",employeeCode:"T002",email:"teacher2@gct.edu.pk",designation:"Lecturer",subject:"Engineering Drawing",mobile:"03002222222",active:true,createdAt:nowIso()},
-      {id:uid("tch"),name:"Engr. Sana Ullah",employeeCode:"T003",email:"teacher3@gct.edu.pk",designation:"Lecturer",subject:"Applied Mathematics",mobile:"03003333333",active:true,createdAt:nowIso()}
-    ];
-  }
-  if(!state.students||!state.students.length){
-    var sem=state.semesters[0];
-    var secA=state.sections.find(function(s){return s.semesterId===sem.id&&s.name==="A";});
-    var secB=state.sections.find(function(s){return s.semesterId===sem.id&&s.name==="B";});
-    state.students=[
-      {id:uid("stu"),admissionNumber:"ADM-2026-001",registrationNumber:"GCT-2026-0001",classNumber:"MECH-1A-01",name:"Demo Student",fatherName:"Demo Father",studentMobile:"03000000001",shift:"Morning",term:"Spring",year:2026,currentSemesterId:sem.id,currentSectionId:secA.id,status:"Active",admissionDate:todayIso()},
-      {id:uid("stu"),admissionNumber:"ADM-2026-002",registrationNumber:"GCT-2026-0002",classNumber:"MECH-1A-02",name:"Ali Hassan",fatherName:"Hassan Ali",studentMobile:"03000000002",shift:"Morning",term:"Spring",year:2026,currentSemesterId:sem.id,currentSectionId:secA.id,status:"Active",admissionDate:todayIso()},
-      {id:uid("stu"),admissionNumber:"ADM-2026-003",registrationNumber:"GCT-2026-0003",classNumber:"MECH-1B-01",name:"Bilal Ahmed",fatherName:"Ahmed Khan",studentMobile:"03000000003",shift:"Morning",term:"Spring",year:2026,currentSemesterId:sem.id,currentSectionId:secB.id,status:"Active",admissionDate:todayIso()}
-    ];
-  }
-  if(!state.parents||!state.parents.length)state.parents=[{id:uid("par"),name:"Demo Parent",mobile:"03000000000",relation:"Father"}];
-  if(!state.parentLinks||!state.parentLinks.length){if(state.parents[0]&&state.students[0])state.parentLinks=[{id:uid("pl"),parentId:state.parents[0].id,studentId:state.students[0].id,relation:"Father",isPrimary:true,verified:true,linkedAt:nowIso()}];}
-  if(!state.courses||!state.courses.length){var s0=state.semesters[0];state.courses=[{id:uid("crs"),code:"ME-101",name:"Applied Thermodynamics",semesterId:s0.id,creditHours:3,type:"theory",status:"Active"},{id:uid("crs"),code:"ME-102",name:"Engineering Drawing",semesterId:s0.id,creditHours:2,type:"practical",status:"Active"},{id:uid("crs"),code:"MA-101",name:"Applied Mathematics",semesterId:s0.id,creditHours:3,type:"theory",status:"Active"}];}
-  if(!state.courseAssignments||!state.courseAssignments.length){
-    var sem1=state.semesters[0];
-    var secA1=state.sections.find(function(s){return s.semesterId===sem1.id&&s.name==="A";});
-    var secB1=state.sections.find(function(s){return s.semesterId===sem1.id&&s.name==="B";});
-    state.courseAssignments=[
-      {id:uid("asg"),courseId:state.courses[0].id,teacherId:state.teachers[0].id,semesterId:sem1.id,sectionId:secA1.id,academicYear:2026},
-      {id:uid("asg"),courseId:state.courses[2].id,teacherId:state.teachers[0].id,semesterId:sem1.id,sectionId:secA1.id,academicYear:2026},
-      {id:uid("asg"),courseId:state.courses[1].id,teacherId:state.teachers[1].id,semesterId:sem1.id,sectionId:secB1.id,academicYear:2026}
-    ];
-  }
-  if(!state.timetable||!state.timetable.length){
-    var sem2=state.semesters[0];
-    var secA2=state.sections.find(function(s){return s.semesterId===sem2.id&&s.name==="A";});
-    var secB2=state.sections.find(function(s){return s.semesterId===sem2.id&&s.name==="B";});
-    state.timetable=[
-      {id:uid("tt"),term:"Spring",year:2026,day:"Monday",startTime:"09:00",endTime:"10:00",courseId:state.courses[0].id,teacherId:state.teachers[0].id,semesterId:sem2.id,sectionId:secA2.id,className:"Class-R1",creditHours:3,slotType:"Theory",status:"Active"},
-      {id:uid("tt"),term:"Spring",year:2026,day:"Monday",startTime:"10:00",endTime:"11:00",courseId:state.courses[2].id,teacherId:state.teachers[0].id,semesterId:sem2.id,sectionId:secA2.id,className:"Class-R1",creditHours:3,slotType:"Theory",status:"Active"},
-      {id:uid("tt"),term:"Spring",year:2026,day:"Tuesday",startTime:"09:00",endTime:"10:30",courseId:state.courses[1].id,teacherId:state.teachers[1].id,semesterId:sem2.id,sectionId:secB2.id,className:"Workshop-1",creditHours:2,slotType:"Practical",status:"Active"},
-      {id:uid("tt"),term:"Spring",year:2026,day:"Wednesday",startTime:"09:00",endTime:"10:00",courseId:state.courses[0].id,teacherId:state.teachers[0].id,semesterId:sem2.id,sectionId:secA2.id,className:"Class-R1",creditHours:3,slotType:"Theory",status:"Active"}
-    ];
-  }
-  if(!state.attendanceRecords||!state.attendanceRecords.length){
-    var stu0=state.students[0];
-    if(stu0){
-      for(var d=0;d<8;d++){
-        var dt=new Date();dt.setDate(dt.getDate()-d);
-        var dstr=dt.getFullYear()+"-"+String(dt.getMonth()+1).padStart(2,"0")+"-"+String(dt.getDate()).padStart(2,"0");
-        var st=(d===3||d===6)?"absent":(d===1?"late":"present");
-        state.attendanceRecords.push({id:uid("rec"),sessionId:"demo_"+d,studentId:stu0.id,courseId:state.courses[0].id,teacherId:state.teachers[0].id,semesterId:state.semesters[0].id,sectionId:stu0.currentSectionId,date:dstr,scheduledStart:"09:00",actualStart:dt.toISOString(),arrivalTime:st==="late"?"09:08":"09:00",status:st,lateMinutes:st==="late"?8:0,markedBy:"system",markedAt:nowIso(),manual:false});
+  try {
+    if(!state.departments||!state.departments.length){
+      var dep={id:uid("dep"),name:"B.Tech Department",code:"BTECH"};
+      var prog={id:uid("prg"),name:"BSc. Mechanical Engineering Technology",code:"BSC-MET",durationYears:4,totalSemesters:8,affiliatedTo:"UET Peshawar",departmentId:dep.id};
+      var batch={id:uid("bch"),name:new Date().getFullYear()+"-"+(new Date().getFullYear()+4),programId:prog.id};
+      var ordinals=["1st","2nd","3rd","4th","5th","6th","7th","8th"];
+      var sems=ordinals.map(function(o,i){return {id:uid("sem"),number:i+1,name:"Semester "+(i+1)+" ("+o+")",programId:prog.id};});
+      var secs=[];
+      sems.forEach(function(sem){SECTIONS.forEach(function(sn){secs.push({id:uid("sec"),name:sn,semesterId:sem.id,capacity:60});});});
+      state.departments=[dep];state.programs=[prog];state.batches=[batch];state.semesters=sems;state.sections=secs;
+      state.settings=Object.assign({},DEFAULT_SETTINGS,{id:"settings_singleton"});
+    }
+    if(!state.teachers||!state.teachers.length){
+      state.teachers=[
+        {id:uid("tch"),name:"Engr. Ahmed Khan",employeeCode:"T001",email:"teacher@gct.edu.pk",designation:"Lecturer",subject:"Applied Thermodynamics",mobile:"03001111111",active:true,createdAt:nowIso()},
+        {id:uid("tch"),name:"Engr. Bilal Ahmad",employeeCode:"T002",email:"teacher2@gct.edu.pk",designation:"Lecturer",subject:"Engineering Drawing",mobile:"03002222222",active:true,createdAt:nowIso()},
+        {id:uid("tch"),name:"Engr. Sana Ullah",employeeCode:"T003",email:"teacher3@gct.edu.pk",designation:"Lecturer",subject:"Applied Mathematics",mobile:"03003333333",active:true,createdAt:nowIso()}
+      ];
+    }
+    if(!state.students||!state.students.length){
+      var sem=state.semesters[0];
+      var secA=state.sections.find(function(s){return s.semesterId===sem.id&&s.name==="A";});
+      var secB=state.sections.find(function(s){return s.semesterId===sem.id&&s.name==="B";});
+      state.students=[
+        {id:uid("stu"),admissionNumber:"ADM-2026-001",registrationNumber:"GCT-2026-0001",classNumber:"MECH-1A-01",name:"Demo Student",fatherName:"Demo Father",studentMobile:"03000000001",shift:"Morning",term:"Spring",year:2026,currentSemesterId:sem.id,currentSectionId:secA.id,status:"Active",admissionDate:todayIso()},
+        {id:uid("stu"),admissionNumber:"ADM-2026-002",registrationNumber:"GCT-2026-0002",classNumber:"MECH-1A-02",name:"Ali Hassan",fatherName:"Hassan Ali",studentMobile:"03000000002",shift:"Morning",term:"Spring",year:2026,currentSemesterId:sem.id,currentSectionId:secA.id,status:"Active",admissionDate:todayIso()},
+        {id:uid("stu"),admissionNumber:"ADM-2026-003",registrationNumber:"GCT-2026-0003",classNumber:"MECH-1B-01",name:"Bilal Ahmed",fatherName:"Ahmed Khan",studentMobile:"03000000003",shift:"Morning",term:"Spring",year:2026,currentSemesterId:sem.id,currentSectionId:secB.id,status:"Active",admissionDate:todayIso()}
+      ];
+    }
+    if(!state.parents||!state.parents.length)state.parents=[{id:uid("par"),name:"Demo Parent",mobile:"03000000000",relation:"Father"}];
+    if(!state.parentLinks||!state.parentLinks.length){if(state.parents[0]&&state.students[0])state.parentLinks=[{id:uid("pl"),parentId:state.parents[0].id,studentId:state.students[0].id,relation:"Father",isPrimary:true,verified:true,linkedAt:nowIso()}];}
+    if(!state.courses||!state.courses.length){var s0=state.semesters[0];state.courses=[{id:uid("crs"),code:"ME-101",name:"Applied Thermodynamics",semesterId:s0.id,creditHours:3,type:"theory",status:"Active"},{id:uid("crs"),code:"ME-102",name:"Engineering Drawing",semesterId:s0.id,creditHours:2,type:"practical",status:"Active"},{id:uid("crs"),code:"MA-101",name:"Applied Mathematics",semesterId:s0.id,creditHours:3,type:"theory",status:"Active"}];}
+    if(!state.courseAssignments||!state.courseAssignments.length){
+      var sem1=state.semesters[0];
+      var secA1=state.sections.find(function(s){return s.semesterId===sem1.id&&s.name==="A";});
+      var secB1=state.sections.find(function(s){return s.semesterId===sem1.id&&s.name==="B";});
+      state.courseAssignments=[
+        {id:uid("asg"),courseId:state.courses[0].id,teacherId:state.teachers[0].id,semesterId:sem1.id,sectionId:secA1.id,academicYear:2026},
+        {id:uid("asg"),courseId:state.courses[2].id,teacherId:state.teachers[0].id,semesterId:sem1.id,sectionId:secA1.id,academicYear:2026},
+        {id:uid("asg"),courseId:state.courses[1].id,teacherId:state.teachers[1].id,semesterId:sem1.id,sectionId:secB1.id,academicYear:2026}
+      ];
+    }
+    if(!state.timetable||!state.timetable.length){
+      var sem2=state.semesters[0];
+      var secA2=state.sections.find(function(s){return s.semesterId===sem2.id&&s.name==="A";});
+      var secB2=state.sections.find(function(s){return s.semesterId===sem2.id&&s.name==="B";});
+      state.timetable=[
+        {id:uid("tt"),term:"Spring",year:2026,day:"Monday",startTime:"09:00",endTime:"10:00",courseId:state.courses[0].id,teacherId:state.teachers[0].id,semesterId:sem2.id,sectionId:secA2.id,className:"Class-R1",creditHours:3,slotType:"Theory",status:"Active"},
+        {id:uid("tt"),term:"Spring",year:2026,day:"Monday",startTime:"10:00",endTime:"11:00",courseId:state.courses[2].id,teacherId:state.teachers[0].id,semesterId:sem2.id,sectionId:secA2.id,className:"Class-R1",creditHours:3,slotType:"Theory",status:"Active"},
+        {id:uid("tt"),term:"Spring",year:2026,day:"Tuesday",startTime:"09:00",endTime:"10:30",courseId:state.courses[1].id,teacherId:state.teachers[1].id,semesterId:sem2.id,sectionId:secB2.id,className:"Workshop-1",creditHours:2,slotType:"Practical",status:"Active"},
+        {id:uid("tt"),term:"Spring",year:2026,day:"Wednesday",startTime:"09:00",endTime:"10:00",courseId:state.courses[0].id,teacherId:state.teachers[0].id,semesterId:sem2.id,sectionId:secA2.id,className:"Class-R1",creditHours:3,slotType:"Theory",status:"Active"}
+      ];
+    }
+    if(!state.attendanceRecords||!state.attendanceRecords.length){
+      var stu0=state.students[0];
+      if(stu0){
+        for(var d=0;d<8;d++){
+          var dt=new Date();dt.setDate(dt.getDate()-d);
+          var dstr=dt.getFullYear()+"-"+String(dt.getMonth()+1).padStart(2,"0")+"-"+String(dt.getDate()).padStart(2,"0");
+          var st=(d===3||d===6)?"absent":(d===1?"late":"present");
+          state.attendanceRecords.push({id:uid("rec"),sessionId:"demo_"+d,studentId:stu0.id,courseId:state.courses[0].id,teacherId:state.teachers[0].id,semesterId:state.semesters[0].id,sectionId:stu0.currentSectionId,date:dstr,scheduledStart:"09:00",actualStart:dt.toISOString(),arrivalTime:st==="late"?"09:08":"09:00",status:st,lateMinutes:st==="late"?8:0,markedBy:"system",markedAt:nowIso(),manual:false});
+        }
       }
     }
+    saveState();
+  } catch(e) {
+    console.error("Old Data Crash Prevented! Resetting state...", e);
+    localStorage.removeItem(STORAGE_KEY);
+    location.reload();
   }
-  saveState();
 }
 
+/* YEH CODE APP KO RUN KARTA HAI (ISKO DELETE NAHI KARNA): */
 bootstrap();
 if(!location.hash)location.hash="#/login";
 renderRoute();
