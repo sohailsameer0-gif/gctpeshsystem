@@ -2036,10 +2036,8 @@ function CoursesPage(ctx){
         return '<tr><td><strong>'+esc(c.code)+'</strong></td><td>'+esc(c.name)+'</td><td>'+esc(sem?sem.name:"")+'</td><td>'+esc(c.creditHours)+'</td><td>'+esc(c.type||"")+'</td><td><span class="badge badge-success">'+esc(c.status||"Active")+'</span></td>'+(canManage?'<td class="text-right"><button class="btn btn-ghost btn-sm" data-edit="'+c.id+'">'+I.edit+'</button> <button class="btn btn-ghost btn-sm" data-del="'+c.id+'">'+I.trash+'</button></td>':'')+'</tr>';
       }).join("")||'<tr><td colspan="'+(canManage?7:6)+'" class="empty">No courses.</td></tr>')+
     '</tbody></table></div></div></div>',
-    onMount:function(root){
-      var b=$("#nc",root);if(b)b.onclick=function(){openCourseForm({session:s,onSaved:renderRoute});};
-      $$("[data-edit]",root).forEach(function(b){b.onclick=function(){openCourseForm({session:s,existing:state.courses.find(function(x){return x.id===b.dataset.edit;}),onSaved:renderRoute});};});
-      $$("[data-del]",root).forEach(function(b){b.onclick=function(){confirmDialog({title:"Delete Course",message:"Confirm?",confirmLabel:"Delete",danger:true}).then(function(ok){if(!ok)return;try{M.deleteCourse(s,b.dataset.del);toast("Deleted","success");renderRoute();}catch(e){toast(e.message,"error");}});};});
+       onMount:function(root){
+      $("#lf",root).onsubmit=function(e){e.preventDefault();var d={};new FormData(e.target).forEach(function(v,k){d[k]=v;});try{M.submitStudentLeave(s,d);toast("Submitted","success");renderRoute();}catch(err){toast(err.message,"error");}};
     }
   });
 }
